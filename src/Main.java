@@ -1,5 +1,14 @@
+import ui.MainFrame;
+import javax.swing.*;
+
+import static data.DataManager.initializeDatabase;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        // Launch the home page
+//            initializeDatabase();
+        
+            MainFrame frame = new MainFrame();
+            frame.setVisible(true);
     }
 }
