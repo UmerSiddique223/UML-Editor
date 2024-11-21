@@ -1,92 +1,92 @@
 package ui;
 
-import bean.DragListener;
-import bean.DragResizeListener;
+import javafx.scene.Cursor;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
+import javafx.geometry.*;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
-public class ClassDiagramPanel extends JPanel {
+public class ClassDiagramPanel extends VBox {
 
     private final ArrayList<String> attributes = new ArrayList<>();
     private final ArrayList<String> methods = new ArrayList<>();
-    private final JLabel titleLabel;
-    private final JTextArea attributesArea;
-    private final JTextArea methodsArea;
+    final Label titleLabel;
+    private final TextArea attributesArea;
+    private final TextArea methodsArea;
+
+    private double initialX, initialY, initialWidth, initialHeight;
+    private boolean resizing;
 
     public ClassDiagramPanel(String className) {
-        setLayout(new BorderLayout());
-        setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
-        setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(200, 150));
+        setStyle("-fx-border-color: black; -fx-border-width: 2px; -fx-background-color: white;");
+        setPrefSize(200, 150);
 
         // Title
-        titleLabel = new JLabel(className, SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        add(titleLabel, BorderLayout.NORTH);
+        titleLabel = new Label(className);
+        titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        titleLabel.setMaxWidth(Double.MAX_VALUE);
+        titleLabel.setAlignment(Pos.CENTER);
 
         // Attributes Section
-        attributesArea = new JTextArea("Attributes...");
+        attributesArea = new TextArea("Attributes...");
         attributesArea.setEditable(false);
-        add(attributesArea, BorderLayout.CENTER);
+        attributesArea.setWrapText(true);
 
         // Methods Section
-        methodsArea = new JTextArea("Methods...");
+        methodsArea = new TextArea("Methods...");
         methodsArea.setEditable(false);
-        add(methodsArea, BorderLayout.SOUTH);
+        methodsArea.setWrapText(true);
+
+        getChildren().addAll(titleLabel,attributesArea,methodsArea);
 
         // Context Menu
-        addMouseListener(new ContextMenuListener());
+        setOnMouseClicked(this::handleContextMenu);
 
-        // Dragging
-        DragResizeListener dragResizeListener = new DragResizeListener(this);
-        addMouseMotionListener(dragResizeListener);
-        addMouseListener(dragResizeListener);
-        DragListener DragListener = new DragListener(this);
-        addMouseMotionListener(DragListener);
-        addMouseListener(DragListener);
 
     }
 
-    private class ContextMenuListener extends MouseAdapter {
-        @Override
-        public void mousePressed(MouseEvent e) {
-            if (SwingUtilities.isRightMouseButton(e)) {
-                showContextMenu(e);
-            }
-        }
+    private void handleContextMenu(MouseEvent e) {
+        if (e.getButton() == MouseButton.SECONDARY) {
+            ContextMenu contextMenu = new ContextMenu();
 
-        private void showContextMenu(MouseEvent e) {
-            JPopupMenu contextMenu = new JPopupMenu();
-
-            JMenuItem addAttribute = new JMenuItem("Add Attribute");
-            addAttribute.addActionListener(ev -> {
-                String attribute = JOptionPane.showInputDialog("Enter Attribute:");
-                if (attribute != null) {
+            MenuItem addAttribute = new MenuItem("Add Attribute");
+            addAttribute.setOnAction(ev -> {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setTitle("Add Attribute");
+                dialog.setHeaderText("Enter Attribute:");
+                dialog.showAndWait().ifPresent(attribute -> {
                     attributes.add(attribute);
                     updateAttributes();
-                }
+                });
             });
 
-            JMenuItem addMethod = new JMenuItem("Add Method");
-            addMethod.addActionListener(ev -> {
-                String method = JOptionPane.showInputDialog("Enter Method:");
-                if (method != null) {
+            MenuItem addMethod = new MenuItem("Add Method");
+            addMethod.setOnAction(ev -> {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setTitle("Add Method");
+                dialog.setHeaderText("Enter Method:");
+                dialog.showAndWait().ifPresent(method -> {
                     methods.add(method);
                     updateMethods();
+                });
+            });
+
+
+            MenuItem delete = new MenuItem("Delete Class Diagram");
+            delete.setOnAction(ev -> {
+                Pane parent = (Pane) getParent();
+                if (parent instanceof StackPane stackPane) {
+                    Pane grandParent = (Pane) stackPane.getParent();
+                    grandParent.getChildren().remove(stackPane);
                 }
             });
 
-            JMenuItem delete = new JMenuItem("Delete Class Diagram");
-            delete.addActionListener(ev -> getParent().remove(ClassDiagramPanel.this));
+            contextMenu.getItems().addAll(addAttribute, addMethod, delete);
+            contextMenu.show(this, e.getScreenX(), e.getScreenY());
 
-            contextMenu.add(addAttribute);
-            contextMenu.add(addMethod);
-            contextMenu.add(delete);
-            contextMenu.show(ClassDiagramPanel.this, e.getX(), e.getY());
+            e.consume();
         }
     }
 
@@ -97,4 +97,5 @@ public class ClassDiagramPanel extends JPanel {
     private void updateMethods() {
         methodsArea.setText(String.join("\n", methods));
     }
+
 }

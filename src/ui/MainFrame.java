@@ -1,104 +1,103 @@
 package ui;
 
-import javax.swing.*;
-import java.awt.*;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 
-public class MainFrame extends JFrame {
+import javafx.geometry.*;
+import javafx.stage.Stage;
 
-    private JPanel cardPanel; // Container for switching between different views
-    private JPanel homePanel;
+public class MainFrame extends Application {
+
+    private BorderPane rootPane; // Main container
+    private StackPane cardPane; // For switching between views
+    private VBox homePanel;
     private CanvasPanel classDiagramPanel;
 
-    public MainFrame() {
-        setTitle("UML Editor");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1100, 750);
-        setLocationRelativeTo(null);
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("UML Editor");
 
-        setJMenuBar(new MenuBarUI(this)); // Menu bar remains constant
+        initializeComponents(primaryStage);
 
-        initializeComponents();
-        initializePanels();
-
-        add(cardPanel);
+        Scene scene = new Scene(rootPane, 1100, 750);
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
-    private void initializeComponents() {
-        // Initialize Home Panel Components
-        JLabel heading = new JLabel("UML Editor", SwingConstants.CENTER);
-        heading.setFont(new Font("Arial", Font.BOLD, 24));
-        heading.setForeground(new Color(70, 130, 180));
+    private void initializeComponents(Stage stage) {
+        rootPane = new BorderPane();
 
-        JButton classBtn = new JButton("Class Diagram");
-        JButton useCaseBtn = new JButton("Use Case Diagram");
+        // Initialize MenuBar
+        MenuBarUI menuBar = new MenuBarUI(stage);
+        Menu fileMenu = new Menu("File");
+        menuBar.getMenus().add(fileMenu);
+        rootPane.setTop(menuBar);
+
+        // Initialize Panels
+        cardPane = new StackPane();
+        initializeHomePanel();
+        initializeClassDiagramPanel();
+
+        cardPane.getChildren().addAll(homePanel);
+        rootPane.setCenter(cardPane);
+    }
+
+    private void initializeHomePanel() {
+        homePanel = new VBox(20);
+        homePanel.setAlignment(Pos.CENTER);
+        homePanel.setStyle("-fx-background-color: white;");
+
+        Label heading = new Label("UML Editor");
+        heading.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #4682b4;");
+
+        Button classBtn = new Button("Class Diagram");
+        Button useCaseBtn = new Button("Use Case Diagram");
 
         styleButton(classBtn);
         styleButton(useCaseBtn);
 
-        classBtn.addActionListener(e -> showClassDiagram());
-        useCaseBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "Use Case Diagram is not implemented yet."));
+        classBtn.setOnAction(e -> showClassDiagram());
+        useCaseBtn.setOnAction(e -> showAlert("Use Case Diagram is not implemented yet."));
 
-        homePanel = new JPanel(new GridBagLayout());
-        homePanel.setBackground(Color.WHITE);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        homePanel.add(heading, gbc);
-
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        homePanel.add(classBtn, gbc);
-
-        gbc.gridx = 1;
-        homePanel.add(useCaseBtn, gbc);
+        homePanel.getChildren().addAll(heading, classBtn, useCaseBtn);
     }
 
-    private void initializePanels() {
-        cardPanel = new JPanel(new CardLayout());
-
-        // Add Home Panel
-        cardPanel.add(homePanel, "Home");
-
-        // Initialize Class Diagram Panel
+    private void initializeClassDiagramPanel() {
         classDiagramPanel = new CanvasPanel();
-        JPanel classPanelContainer = new JPanel(new BorderLayout());
-        classPanelContainer.add(classDiagramPanel, BorderLayout.CENTER);
-        classPanelContainer.setBackground(Color.LIGHT_GRAY);
-
-        // Add Class Diagram Panel to CardLayout
-        cardPanel.add(classPanelContainer, "ClassDiagram");
+        BorderPane classPanelContainer = new BorderPane();
+        classPanelContainer.setCenter(classDiagramPanel);
+        classPanelContainer.setStyle("-fx-background-color: lightgray;");
     }
 
-    private void styleButton(JButton button) {
-        button.setFont(new Font("Arial", Font.BOLD, 16));
-        button.setBackground(new Color(70, 130, 180));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+    private void styleButton(Button button) {
+        button.setStyle(
+                "-fx-font-size: 16px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-background-color: #4682b4; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-padding: 10 20 10 20;"
+        );
     }
 
     private void showClassDiagram() {
-        CardLayout cl = (CardLayout) cardPanel.getLayout();
-        cl.show(cardPanel, "ClassDiagram");
+        cardPane.getChildren().setAll(classDiagramPanel);
 
         // Add new diagram
-        String name = JOptionPane.showInputDialog("Enter Class Diagram Name:");
-        if (name != null) {
-            classDiagramPanel.addClassDiagram(name);
-        }
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Class Diagram");
+        dialog.setHeaderText("Enter Class Diagram Name:");
+        dialog.showAndWait().ifPresent(name -> classDiagramPanel.addClassDiagram(name));
     }
 
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            MainFrame frame = new MainFrame();
-            frame.setVisible(true);
-        });
+        launch(args);
     }
 }

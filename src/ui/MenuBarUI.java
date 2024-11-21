@@ -1,52 +1,57 @@
 package ui;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCombination;
+import javafx.stage.Stage;
 
-public class MenuBarUI extends JMenuBar {
+public class MenuBarUI extends MenuBar {
 
-    public MenuBarUI(JFrame parentFrame) {
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem newFile = new JMenuItem("New");
-        JMenuItem openFile = new JMenuItem("Open");
-        JMenuItem saveFile = new JMenuItem("Save");
-        JMenuItem exitApp = new JMenuItem("Exit");
-        exitApp.addActionListener(e -> System.exit(0));
+    public MenuBarUI(Stage parentStage) {
+        // File Menu
+        Menu fileMenu = new Menu("File");
 
-        fileMenu.add(newFile);
-        fileMenu.add(openFile);
-        fileMenu.add(saveFile);
-        fileMenu.addSeparator();
-        fileMenu.add(exitApp);
+        MenuItem newFile = new MenuItem("New");
+        MenuItem openFile = new MenuItem("Open");
+        MenuItem saveFile = new MenuItem("Save");
+        MenuItem exitApp = new MenuItem("Exit");
 
-        JMenu editMenu = new JMenu("Edit");
-        JMenuItem undo = new JMenuItem("Undo");
-        JMenuItem redo = new JMenuItem("Redo");
-        JMenuItem delete = new JMenuItem("Delete");
+        exitApp.setOnAction(e -> parentStage.close()); // Close the application
+        fileMenu.getItems().addAll(newFile, openFile, saveFile, new SeparatorMenuItem(), exitApp);
 
-        editMenu.add(undo);
-        editMenu.add(redo);
-        editMenu.add(delete);
+        // Edit Menu
+        Menu editMenu = new Menu("Edit");
 
-        JMenu viewMenu = new JMenu("View");
-        JMenuItem zoomIn = new JMenuItem("Zoom In");
-        JMenuItem zoomOut = new JMenuItem("Zoom Out");
-        JMenuItem switchDiagram = new JMenuItem("Switch Diagram");
+        MenuItem undo = new MenuItem("Undo");
+        MenuItem redo = new MenuItem("Redo");
+        MenuItem delete = new MenuItem("Delete");
 
-        viewMenu.add(zoomIn);
-        viewMenu.add(zoomOut);
-        viewMenu.addSeparator();
-        viewMenu.add(switchDiagram);
+        editMenu.getItems().addAll(undo, redo, delete);
 
-        JMenu helpMenu = new JMenu("Help");
-        JMenuItem about = new JMenuItem("About");
-        about.addActionListener(e -> JOptionPane.showMessageDialog(parentFrame, "UML Editor v1.0"));
+        // View Menu
+        Menu viewMenu = new Menu("View");
 
-        helpMenu.add(about);
+        MenuItem zoomIn = new MenuItem("Zoom In");
+        MenuItem zoomOut = new MenuItem("Zoom Out");
+        MenuItem switchDiagram = new MenuItem("Switch Diagram");
 
-        this.add(fileMenu);
-        this.add(editMenu);
-        this.add(viewMenu);
-        this.add(helpMenu);
+        viewMenu.getItems().addAll(zoomIn, zoomOut, new SeparatorMenuItem(), switchDiagram);
+
+        // Help Menu
+        Menu helpMenu = new Menu("Help");
+
+        MenuItem about = new MenuItem("About");
+        about.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.initOwner(parentStage);
+            alert.setTitle("About");
+            alert.setHeaderText("UML Editor v1.0");
+            alert.setContentText("A simple UML editor application built with JavaFX.");
+            alert.showAndWait();
+        });
+
+        helpMenu.getItems().add(about);
+
+        // Add Menus to the MenuBar
+        this.getMenus().addAll(fileMenu, editMenu, viewMenu, helpMenu);
     }
 }
