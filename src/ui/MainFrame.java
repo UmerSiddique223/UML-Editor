@@ -1,10 +1,12 @@
 package ui;
 
+import bean.DragResizeBean;
+import core.Circle;
+import core.DrawingState;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-
 import javafx.geometry.*;
 import javafx.stage.Stage;
 
@@ -13,7 +15,8 @@ public class MainFrame extends Application {
     private BorderPane rootPane; // Main container
     private StackPane cardPane; // For switching between views
     private VBox homePanel;
-    private CanvasPanel classDiagramPanel;
+    private Circle.CanvasPanel canvasPanel;
+    private ToolBar toolBar; // Left-side toolbar
 
     @Override
     public void start(Stage primaryStage) {
@@ -30,18 +33,25 @@ public class MainFrame extends Application {
         rootPane = new BorderPane();
 
         // Initialize MenuBar
-        MenuBarUI menuBar = new MenuBarUI(stage);
-        Menu fileMenu = new Menu("File");
-        menuBar.getMenus().add(fileMenu);
+        MenuBar menuBar = initializeMenuBar(stage);
         rootPane.setTop(menuBar);
 
         // Initialize Panels
         cardPane = new StackPane();
         initializeHomePanel();
-        initializeClassDiagramPanel();
+        initializeCanvasPanel();
 
-        cardPane.getChildren().addAll(homePanel);
+        // Initialize ToolBar
+
+
+        cardPane.getChildren().add(homePanel);
         rootPane.setCenter(cardPane);
+    }
+
+    private MenuBar initializeMenuBar(Stage stage) {
+
+
+        return new MenuBarUI(stage);
     }
 
     private void initializeHomePanel() {
@@ -57,18 +67,16 @@ public class MainFrame extends Application {
 
         styleButton(classBtn);
         styleButton(useCaseBtn);
+        useCaseBtn.setOnAction(e -> showUseCaseDiagram());
 
         classBtn.setOnAction(e -> showClassDiagram());
-        useCaseBtn.setOnAction(e -> showAlert("Use Case Diagram is not implemented yet."));
 
         homePanel.getChildren().addAll(heading, classBtn, useCaseBtn);
     }
 
-    private void initializeClassDiagramPanel() {
-        classDiagramPanel = new CanvasPanel();
-        BorderPane classPanelContainer = new BorderPane();
-        classPanelContainer.setCenter(classDiagramPanel);
-        classPanelContainer.setStyle("-fx-background-color: lightgray;");
+    private void initializeCanvasPanel() {
+        canvasPanel = new Circle.CanvasPanel();
+        canvasPanel.setStyle("-fx-background-color: lightgray;");
     }
 
     private void styleButton(Button button) {
@@ -77,18 +85,62 @@ public class MainFrame extends Application {
                         "-fx-font-weight: bold; " +
                         "-fx-background-color: #4682b4; " +
                         "-fx-text-fill: white; " +
-                        "-fx-padding: 10 20 10 20;"
+                        "-fx-padding: 10 20 10 20; " +
+                        "-fx-border-radius: 5px; " +
+                        "-fx-background-radius: 5px;"
         );
+        button.setOnMouseEntered(e -> button.setStyle(
+                "-fx-font-size: 16px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-background-color: #1e90ff; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-padding: 10 20 10 20; " +
+                        "-fx-border-radius: 5px; " +
+                        "-fx-background-radius: 5px;"
+        ));
+        button.setOnMouseExited(e -> button.setStyle(
+                "-fx-font-size: 16px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-background-color: #4682b4; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-padding: 10 20 10 20; " +
+                        "-fx-border-radius: 5px; " +
+                        "-fx-background-radius: 5px;"
+        ));
     }
 
     private void showClassDiagram() {
-        cardPane.getChildren().setAll(classDiagramPanel);
+        cardPane.getChildren().setAll(canvasPanel);
 
-        // Add new diagram
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Add Class Diagram");
         dialog.setHeaderText("Enter Class Diagram Name:");
-        dialog.showAndWait().ifPresent(name -> classDiagramPanel.addClassDiagram(name));
+        dialog.showAndWait().ifPresent(name -> {
+            DragResizeBean.ClassDiagramPanel classDiagramPanel = new DragResizeBean.ClassDiagramPanel(name);
+            toolBar = new ToolBar(canvasPanel);
+            toolBar.loadToolsForDiagramType("ClassDiagram");
+            rootPane.setLeft(toolBar);
+            canvasPanel.addDiagramToCanvas(classDiagramPanel, 50, 50);
+            toolBar.setVisible(true);
+        });
+    }
+
+    private void showUseCaseDiagram() {
+
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Use Case Diagram");
+        dialog.setHeaderText("Enter Use Case Diagram Name:");
+        dialog.showAndWait().ifPresent(name -> {
+            DrawingState.UseCaseDiagramPanel useCaseDiagramPanel = new DrawingState.UseCaseDiagramPanel(name);
+            toolBar = new ToolBar(useCaseDiagramPanel);
+            toolBar.loadToolsForDiagramType("UseCaseDiagram");
+            rootPane.setLeft(toolBar);
+            toolBar.setVisible(true);
+
+
+            cardPane.getChildren().setAll(useCaseDiagramPanel);
+        });
+
     }
 
     private void showAlert(String message) {
