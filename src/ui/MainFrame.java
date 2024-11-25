@@ -1,8 +1,8 @@
 package ui;
 
-import bean.DragResizeBean;
-import core.Circle;
-import core.DrawingState;
+import core.ClassDiagramPanel;
+import core.CanvasPanel;
+import core.UseCaseDiagramPanel;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -10,14 +10,12 @@ import javafx.scene.layout.*;
 import javafx.geometry.*;
 import javafx.stage.Stage;
 
-import java.util.Optional;
-
 public class MainFrame extends Application {
 
     private BorderPane rootPane; // Main container
     private StackPane cardPane; // For switching between views
     private VBox homePanel;
-    private Circle.CanvasPanel canvasPanel;
+    private CanvasPanel canvasPanel;
     private ToolBar toolBar; // Left-side toolbar
 
     @Override
@@ -44,11 +42,15 @@ public class MainFrame extends Application {
         initializeCanvasPanel();
 
         // Initialize ToolBar
+
+
         cardPane.getChildren().add(homePanel);
         rootPane.setCenter(cardPane);
     }
 
     private MenuBar initializeMenuBar(Stage stage) {
+
+
         return new MenuBarUI(stage);
     }
 
@@ -73,7 +75,7 @@ public class MainFrame extends Application {
     }
 
     private void initializeCanvasPanel() {
-        canvasPanel = new Circle.CanvasPanel();
+        canvasPanel = new CanvasPanel();
         canvasPanel.setStyle("-fx-background-color: lightgray;");
     }
 
@@ -108,28 +110,19 @@ public class MainFrame extends Application {
     }
 
     private void showClassDiagram() {
-//        cardPane.getChildren().setAll(canvasPanel);
+        cardPane.getChildren().setAll(canvasPanel);
 
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Create a Class Diagram");
-        dialog.setHeaderText("Enter a name for Class Diagram:");
-
-        Optional<String> result = dialog.showAndWait();
-        if (result.isPresent()) {
-
-            cardPane.getChildren().setAll(canvasPanel);
-            String name = result.get();
-//            DragResizeBean.ClassDiagramPanel classDiagramPanel = new DragResizeBean.ClassDiagramPanel(name);
+        dialog.setTitle("Add Class Diagram");
+        dialog.setHeaderText("Enter Class Diagram Name:");
+        dialog.showAndWait().ifPresent(name -> {
+            ClassDiagramPanel classDiagramPanel = new ClassDiagramPanel(name);
             toolBar = new ToolBar(canvasPanel);
             toolBar.loadToolsForDiagramType("ClassDiagram");
             rootPane.setLeft(toolBar);
-//            canvasPanel.addDiagramToCanvas(classDiagramPanel, 50, 50);
+            canvasPanel.addDiagramToCanvas(classDiagramPanel, 50, 50);
             toolBar.setVisible(true);
-        }
-        else {
-            System.out.println("Dialog was canceled.");
-        }
-
+        });
     }
 
     private void showUseCaseDiagram() {
@@ -138,11 +131,12 @@ public class MainFrame extends Application {
         dialog.setTitle("Add Use Case Diagram");
         dialog.setHeaderText("Enter Use Case Diagram Name:");
         dialog.showAndWait().ifPresent(name -> {
-            DrawingState.UseCaseDiagramPanel useCaseDiagramPanel = new DrawingState.UseCaseDiagramPanel(name);
+            UseCaseDiagramPanel useCaseDiagramPanel = new UseCaseDiagramPanel(name);
             toolBar = new ToolBar(useCaseDiagramPanel);
             toolBar.loadToolsForDiagramType("UseCaseDiagram");
             rootPane.setLeft(toolBar);
             toolBar.setVisible(true);
+
 
             cardPane.getChildren().setAll(useCaseDiagramPanel);
         });
