@@ -1,7 +1,7 @@
 package ui;
 
-import core.ClassDiagramPanel;
 import core.CanvasPanel;
+import core.ClassDiagram;
 import core.UseCaseDiagramPanel;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -17,6 +17,7 @@ public class MainFrame extends Application {
     private VBox homePanel;
     private CanvasPanel canvasPanel;
     private ToolBar toolBar; // Left-side toolbar
+    private ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
 
     @Override
     public void start(Stage primaryStage) {
@@ -110,18 +111,22 @@ public class MainFrame extends Application {
     }
 
     private void showClassDiagram() {
-        cardPane.getChildren().setAll(canvasPanel);
 
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Add Class Diagram");
         dialog.setHeaderText("Enter Class Diagram Name:");
         dialog.showAndWait().ifPresent(name -> {
-            ClassDiagramPanel classDiagramPanel = new ClassDiagramPanel(name);
-            toolBar = new ToolBar(canvasPanel);
-            toolBar.loadToolsForDiagramType("ClassDiagram");
-            rootPane.setLeft(toolBar);
-            canvasPanel.addDiagramToCanvas(classDiagramPanel, 50, 50);
-            toolBar.setVisible(true);
+
+            ClassDiagram classDiagram = new ClassDiagram(name);
+            classDiagramToolbar = new ClassDiagramToolbar(canvasPanel);
+//            toolBar.loadToolsForDiagramType("ClassDiagram");
+            rootPane.setLeft(classDiagramToolbar);
+//            canvasPanel.addClassToCanvas(classDiagramPanel, 50, 50);
+
+            canvasPanel.setCurrentDiagram(classDiagram);
+
+            cardPane.getChildren().setAll(canvasPanel);
+            classDiagramToolbar.setVisible(true);
         });
     }
 
@@ -136,7 +141,6 @@ public class MainFrame extends Application {
             toolBar.loadToolsForDiagramType("UseCaseDiagram");
             rootPane.setLeft(toolBar);
             toolBar.setVisible(true);
-
 
             cardPane.getChildren().setAll(useCaseDiagramPanel);
         });

@@ -6,19 +6,21 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import ui.AbstractDiagramPanel;
+import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 
-public  class ClassDiagramPanel extends AbstractDiagramPanel {
+public  class ClassPanel extends VBox {
+    public String ClassName;
     private final ArrayList<String> attributes = new ArrayList<>();
     private final ArrayList<String> methods = new ArrayList<>();
+
     final Label titleLabel;
     private final TextArea attributesArea;
     private final TextArea methodsArea;
 
-    public ClassDiagramPanel(String className) {
-        super(className);
+    public ClassPanel(String className) {
+        ClassName = className;
         setStyle("-fx-border-color: black; -fx-border-width: 2px; -fx-background-color: white;");
         setPrefSize(200, 150);
 
