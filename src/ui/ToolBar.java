@@ -1,7 +1,7 @@
 package ui;
 
-import core.Circle;
-import core.DrawingState;
+import core.CanvasPanel;
+import core.UseCaseDiagramPanel;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 
@@ -12,17 +12,17 @@ import java.util.function.Consumer;
 public class ToolBar extends VBox {
 
     private final Map<String, Consumer<Void>> toolActions = new HashMap<>();
-    private Circle.CanvasPanel canvasPanel;
-    private DrawingState.UseCaseDiagramPanel useCasePanel;
+    private CanvasPanel canvasPanel;
+    private UseCaseDiagramPanel useCasePanel;
 
     public ToolBar(Object panel) {
         setSpacing(10);
         setStyle("-fx-background-color: #f0f0f0; -fx-padding: 10px;");
 
-        if (panel instanceof Circle.CanvasPanel) {
-            this.canvasPanel = (Circle.CanvasPanel) panel;
-        } else if (panel instanceof DrawingState.UseCaseDiagramPanel) {
-            this.useCasePanel = (DrawingState.UseCaseDiagramPanel) panel;
+        if (panel instanceof CanvasPanel) {
+            this.canvasPanel = (CanvasPanel) panel;
+        } else if (panel instanceof UseCaseDiagramPanel) {
+            this.useCasePanel = (UseCaseDiagramPanel) panel;
         } else {
             throw new IllegalArgumentException("Unsupported panel type: " + panel.getClass().getName());
         }

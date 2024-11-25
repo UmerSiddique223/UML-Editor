@@ -1,8 +1,8 @@
 package ui;
 
-import bean.DragResizeBean;
-import core.Circle;
-import core.DrawingState;
+import core.ClassDiagramPanel;
+import core.CanvasPanel;
+import core.UseCaseDiagramPanel;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -15,7 +15,7 @@ public class MainFrame extends Application {
     private BorderPane rootPane; // Main container
     private StackPane cardPane; // For switching between views
     private VBox homePanel;
-    private Circle.CanvasPanel canvasPanel;
+    private CanvasPanel canvasPanel;
     private ToolBar toolBar; // Left-side toolbar
 
     @Override
@@ -75,7 +75,7 @@ public class MainFrame extends Application {
     }
 
     private void initializeCanvasPanel() {
-        canvasPanel = new Circle.CanvasPanel();
+        canvasPanel = new CanvasPanel();
         canvasPanel.setStyle("-fx-background-color: lightgray;");
     }
 
@@ -116,7 +116,7 @@ public class MainFrame extends Application {
         dialog.setTitle("Add Class Diagram");
         dialog.setHeaderText("Enter Class Diagram Name:");
         dialog.showAndWait().ifPresent(name -> {
-            DragResizeBean.ClassDiagramPanel classDiagramPanel = new DragResizeBean.ClassDiagramPanel(name);
+            ClassDiagramPanel classDiagramPanel = new ClassDiagramPanel(name);
             toolBar = new ToolBar(canvasPanel);
             toolBar.loadToolsForDiagramType("ClassDiagram");
             rootPane.setLeft(toolBar);
@@ -131,7 +131,7 @@ public class MainFrame extends Application {
         dialog.setTitle("Add Use Case Diagram");
         dialog.setHeaderText("Enter Use Case Diagram Name:");
         dialog.showAndWait().ifPresent(name -> {
-            DrawingState.UseCaseDiagramPanel useCaseDiagramPanel = new DrawingState.UseCaseDiagramPanel(name);
+            UseCaseDiagramPanel useCaseDiagramPanel = new UseCaseDiagramPanel(name);
             toolBar = new ToolBar(useCaseDiagramPanel);
             toolBar.loadToolsForDiagramType("UseCaseDiagram");
             rootPane.setLeft(toolBar);
