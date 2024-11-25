@@ -1,3 +1,6 @@
+javafx-sdk-23.0.1
+.idea/
+
 ### IntelliJ IDEA ###
 out/
 !**/src/main/**/out/
