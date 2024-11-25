@@ -10,6 +10,8 @@ import javafx.scene.layout.*;
 import javafx.geometry.*;
 import javafx.stage.Stage;
 
+import java.util.Optional;
+
 public class MainFrame extends Application {
 
     private BorderPane rootPane; // Main container
@@ -42,15 +44,11 @@ public class MainFrame extends Application {
         initializeCanvasPanel();
 
         // Initialize ToolBar
-
-
         cardPane.getChildren().add(homePanel);
         rootPane.setCenter(cardPane);
     }
 
     private MenuBar initializeMenuBar(Stage stage) {
-
-
         return new MenuBarUI(stage);
     }
 
@@ -110,19 +108,28 @@ public class MainFrame extends Application {
     }
 
     private void showClassDiagram() {
-        cardPane.getChildren().setAll(canvasPanel);
+//        cardPane.getChildren().setAll(canvasPanel);
 
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add Class Diagram");
-        dialog.setHeaderText("Enter Class Diagram Name:");
-        dialog.showAndWait().ifPresent(name -> {
-            DragResizeBean.ClassDiagramPanel classDiagramPanel = new DragResizeBean.ClassDiagramPanel(name);
+        dialog.setTitle("Create a Class Diagram");
+        dialog.setHeaderText("Enter a name for Class Diagram:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+
+            cardPane.getChildren().setAll(canvasPanel);
+            String name = result.get();
+//            DragResizeBean.ClassDiagramPanel classDiagramPanel = new DragResizeBean.ClassDiagramPanel(name);
             toolBar = new ToolBar(canvasPanel);
             toolBar.loadToolsForDiagramType("ClassDiagram");
             rootPane.setLeft(toolBar);
-            canvasPanel.addDiagramToCanvas(classDiagramPanel, 50, 50);
+//            canvasPanel.addDiagramToCanvas(classDiagramPanel, 50, 50);
             toolBar.setVisible(true);
-        });
+        }
+        else {
+            System.out.println("Dialog was canceled.");
+        }
+
     }
 
     private void showUseCaseDiagram() {
@@ -136,7 +143,6 @@ public class MainFrame extends Application {
             toolBar.loadToolsForDiagramType("UseCaseDiagram");
             rootPane.setLeft(toolBar);
             toolBar.setVisible(true);
-
 
             cardPane.getChildren().setAll(useCaseDiagramPanel);
         });

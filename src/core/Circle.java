@@ -36,8 +36,8 @@ public class Circle {
             MenuItem addClassDiagram = new MenuItem("Add Class Diagram");
             addClassDiagram.setOnAction(ev -> {
                 TextInputDialog dialog = new TextInputDialog();
-                dialog.setTitle("Add Class Diagram");
-                dialog.setHeaderText("Enter Class Diagram Name:");
+                dialog.setTitle("Add Class");
+                dialog.setHeaderText("Enter Class Name:");
                 dialog.showAndWait().ifPresent(name -> addDiagramToCanvas(new DragResizeBean.ClassDiagramPanel(name), x, y));
             });
 
