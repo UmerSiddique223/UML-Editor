@@ -1,7 +1,7 @@
 package ui;
 
-import core.CanvasPanel;
-import core.UseCaseDiagramPanel;
+import core.class_diagram.ClassDiagramCanvasPanel;
+import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 
@@ -9,18 +9,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class ToolBar extends VBox {
+public class UsecaseToolbar extends VBox {
 
     private final Map<String, Consumer<Void>> toolActions = new HashMap<>();
-    private CanvasPanel canvasPanel;
+    private ClassDiagramCanvasPanel classDiagramCanvasPanel;
     private UseCaseDiagramPanel useCasePanel;
 
-    public ToolBar(Object panel) {
+    public UsecaseToolbar(Object panel) {
         setSpacing(10);
         setStyle("-fx-background-color: #f0f0f0; -fx-padding: 10px;");
 
-        if (panel instanceof CanvasPanel) {
-            this.canvasPanel = (CanvasPanel) panel;
+        if (panel instanceof ClassDiagramCanvasPanel) {
+            this.classDiagramCanvasPanel = (ClassDiagramCanvasPanel) panel;
         } else if (panel instanceof UseCaseDiagramPanel) {
             this.useCasePanel = (UseCaseDiagramPanel) panel;
         } else {
@@ -42,7 +42,7 @@ public class ToolBar extends VBox {
 
     public void loadToolsForDiagramType(String diagramType) {
         clearTools();
-        if ("ClassDiagram".equals(diagramType) && canvasPanel != null) {
+        if ("ClassDiagram".equals(diagramType) && classDiagramCanvasPanel != null) {
 //            // Add tools specific to Class Diagrams
 //            addTool("Aggregation", v -> setRelationshipTool("Aggregation"));
 //            addTool("Inheritance", v -> setRelationshipTool("Inheritance"));

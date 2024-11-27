@@ -1,4 +1,4 @@
-package core;
+package core.class_diagram;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -10,6 +10,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 
+// A panel representing a Class
 public  class ClassPanel extends VBox {
     public String ClassName;
     private final ArrayList<String> attributes = new ArrayList<>();

@@ -1,8 +1,8 @@
 package ui;
 
-import core.CanvasPanel;
-import core.ClassDiagram;
-import core.UseCaseDiagramPanel;
+import core.class_diagram.ClassDiagramCanvasPanel;
+import core.class_diagram.ClassDiagram;
+import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -15,8 +15,8 @@ public class MainFrame extends Application {
     private BorderPane rootPane; // Main container
     private StackPane cardPane; // For switching between views
     private VBox homePanel;
-    private CanvasPanel canvasPanel;
-    private ToolBar toolBar; // Left-side toolbar
+    private ClassDiagramCanvasPanel classDiagramCanvasPanel;
+    private UsecaseToolbar usecaseToolbar; // Left-side toolbar
     private ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
 
     @Override
@@ -34,25 +34,15 @@ public class MainFrame extends Application {
         rootPane = new BorderPane();
 
         // Initialize MenuBar
-        MenuBar menuBar = initializeMenuBar(stage);
+        MenuBar menuBar = new MenuBarUI(stage);
         rootPane.setTop(menuBar);
 
         // Initialize Panels
         cardPane = new StackPane();
         initializeHomePanel();
-        initializeCanvasPanel();
-
-        // Initialize ToolBar
-
 
         cardPane.getChildren().add(homePanel);
         rootPane.setCenter(cardPane);
-    }
-
-    private MenuBar initializeMenuBar(Stage stage) {
-
-
-        return new MenuBarUI(stage);
     }
 
     private void initializeHomePanel() {
@@ -73,11 +63,6 @@ public class MainFrame extends Application {
         classBtn.setOnAction(e -> showClassDiagram());
 
         homePanel.getChildren().addAll(heading, classBtn, useCaseBtn);
-    }
-
-    private void initializeCanvasPanel() {
-        canvasPanel = new CanvasPanel();
-        canvasPanel.setStyle("-fx-background-color: lightgray;");
     }
 
     private void styleButton(Button button) {
@@ -111,6 +96,8 @@ public class MainFrame extends Application {
     }
 
     private void showClassDiagram() {
+        classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
+        classDiagramCanvasPanel.setStyle("-fx-background-color: lightgray;");
 
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Add Class Diagram");
@@ -118,15 +105,14 @@ public class MainFrame extends Application {
         dialog.showAndWait().ifPresent(name -> {
 
             ClassDiagram classDiagram = new ClassDiagram(name);
-            classDiagramToolbar = new ClassDiagramToolbar(canvasPanel);
-//            toolBar.loadToolsForDiagramType("ClassDiagram");
+            classDiagramToolbar = new ClassDiagramToolbar(classDiagramCanvasPanel);
             rootPane.setLeft(classDiagramToolbar);
-//            canvasPanel.addClassToCanvas(classDiagramPanel, 50, 50);
 
-            canvasPanel.setCurrentDiagram(classDiagram);
+            classDiagramCanvasPanel.setCurrentDiagram(classDiagram);
 
-            cardPane.getChildren().setAll(canvasPanel);
+            cardPane.getChildren().setAll(classDiagramCanvasPanel);
             classDiagramToolbar.setVisible(true);
+
         });
     }
 
@@ -137,10 +123,10 @@ public class MainFrame extends Application {
         dialog.setHeaderText("Enter Use Case Diagram Name:");
         dialog.showAndWait().ifPresent(name -> {
             UseCaseDiagramPanel useCaseDiagramPanel = new UseCaseDiagramPanel(name);
-            toolBar = new ToolBar(useCaseDiagramPanel);
-            toolBar.loadToolsForDiagramType("UseCaseDiagram");
-            rootPane.setLeft(toolBar);
-            toolBar.setVisible(true);
+            usecaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
+            usecaseToolbar.loadToolsForDiagramType("UseCaseDiagram");
+            rootPane.setLeft(usecaseToolbar);
+            usecaseToolbar.setVisible(true);
 
             cardPane.getChildren().setAll(useCaseDiagramPanel);
         });
