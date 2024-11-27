@@ -1,7 +1,6 @@
-package core;
+package core.class_diagram;
 
 import bean.DragResizeBean;
-import javafx.scene.Node;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -14,15 +13,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
-import ui.AbstractDiagramPanel;
 
-public class CanvasPanel extends Pane {
+// Canvas for Class Diagrams
+public class ClassDiagramCanvasPanel extends Pane {
     ClassDiagram diagram;
     private String drawingMode = "";
 
     private Line tempLine;
 
-    public CanvasPanel() {
+    public ClassDiagramCanvasPanel() {
         setStyle("-fx-background-color: white;");
         setPrefSize(800, 600);
 

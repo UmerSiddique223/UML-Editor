@@ -1,7 +1,8 @@
-package core;
+package core.class_diagram;
 
 import java.util.ArrayList;
 
+// For Storing Class Diagrams and Generating Code
 public class ClassDiagram {
     public String Name;
     public ArrayList<ClassPanel> classes = new ArrayList<ClassPanel>();

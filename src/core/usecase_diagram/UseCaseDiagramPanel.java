@@ -1,4 +1,4 @@
-package core;
+package core.usecase_diagram;
 
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseButton;

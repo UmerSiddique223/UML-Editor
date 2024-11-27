@@ -1,4 +1,4 @@
-package core;
+package core.class_diagram;
 
 import java.awt.*;
 
