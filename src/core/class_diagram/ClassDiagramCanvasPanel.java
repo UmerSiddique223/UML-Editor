@@ -1,6 +1,8 @@
 package core.class_diagram;
 
 import bean.DragResizeBean;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -18,8 +20,6 @@ import javafx.scene.shape.Rectangle;
 public class ClassDiagramCanvasPanel extends Pane {
     ClassDiagram diagram;
     private String drawingMode = "";
-
-    private Line tempLine;
 
     public ClassDiagramCanvasPanel() {
         setStyle("-fx-background-color: white;");
@@ -58,11 +58,82 @@ public class ClassDiagramCanvasPanel extends Pane {
         container.setLayoutX(x);
         container.setLayoutY(y);
 
+        // Apply resizing functionality
         DragResizeBean.apply(container, this);
+
         getChildren().add(container);
+
+        // Attach drag event handlers
+        container.setOnMousePressed(event -> handleClassDragStart(container, event));
+        container.setOnMouseDragged(event -> handleClassDrag(container, event));
+        container.setOnMouseReleased(event -> handleClassDragEnd(container));
 
         // Adding class to the Diagram class too:
         diagram.addClass(classPanel);
+    }
+
+    private double dragStartX;
+    private double dragStartY;
+
+    private void handleClassDragStart(StackPane container, MouseEvent event) {
+        dragStartX = event.getSceneX() - container.getLayoutX();
+        dragStartY = event.getSceneY() - container.getLayoutY();
+    }
+
+    private void handleClassDrag(StackPane container, MouseEvent event) {
+        // Get the current position of the mouse relative to the canvas
+        double newX = event.getSceneX() - dragStartX;
+        double newY = event.getSceneY() - dragStartY;
+
+        // Update the position of the container during dragging
+        container.setLayoutX(newX);
+        container.setLayoutY(newY);
+    }
+
+    private void handleClassDragEnd(StackPane container) {
+        // After the mouse is released, check for overlaps and adjust position
+        for (javafx.scene.Node node : getChildren()) {
+            if (node instanceof StackPane && node != container) {
+                StackPane otherContainer = (StackPane) node;
+                if (isOverlapping(container, otherContainer)) {
+                    // Reposition the container outside the other class to avoid overlap
+                    double newX = container.getLayoutX();
+                    double newY = container.getLayoutY();
+
+                    // Find an empty space where the container can be placed outside the other container
+                    if (newX + container.getWidth() > otherContainer.getLayoutX() &&
+                            newX < otherContainer.getLayoutX() + otherContainer.getWidth()) {
+                        newX = otherContainer.getLayoutX() + otherContainer.getWidth() + 10; // Move to the right of the other class
+                    }
+
+                    if (newY + container.getHeight() > otherContainer.getLayoutY() &&
+                            newY < otherContainer.getLayoutY() + otherContainer.getHeight()) {
+                        newY = otherContainer.getLayoutY() + otherContainer.getHeight() + 10; // Move below the other class
+                    }
+
+                    // Apply the adjusted position to avoid overlap
+                    container.setLayoutX(newX);
+                    container.setLayoutY(newY);
+                    return;
+                }
+            }
+        }
+    }
+
+    // Method to check if two StackPanes are overlapping
+    private boolean isOverlapping(StackPane container, StackPane otherContainer) {
+        double x1 = container.getLayoutX();
+        double y1 = container.getLayoutY();
+        double w1 = container.getWidth();
+        double h1 = container.getHeight();
+
+        double x2 = otherContainer.getLayoutX();
+        double y2 = otherContainer.getLayoutY();
+        double w2 = otherContainer.getWidth();
+        double h2 = otherContainer.getHeight();
+
+        // Check for overlap on X and Y axis
+        return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
     }
 
     private void handleMouseClick(MouseEvent event) {
@@ -70,7 +141,6 @@ public class ClassDiagramCanvasPanel extends Pane {
             if (event.getButton() == MouseButton.SECONDARY) {
                 showContextMenu(event.getScreenX(), event.getScreenY(), event.getX(), event.getY());
             }
-            return;
         }
     }
 //        AbstractDiagramPanel clickedDiagram = findDiagramAt(event);
@@ -182,53 +252,53 @@ public class ClassDiagramCanvasPanel extends Pane {
 
         // Drawing Lines:
 
-        if (relationshipType == "association"){
-
+        if (relationshipType.equals("association")) {
             // Get parent StackPanes
             StackPane startParent = (StackPane) startClass.getParent();
             StackPane endParent = (StackPane) endClass.getParent();
 
-            // Create a line and bind its start and end points to the center positions of the StackPanes
+            // Create a line and bind its start and end points using border calculations
             Line relationshipLine = new Line();
             relationshipLine.setStroke(Color.BLACK);
 
-            // Bind start points
-            relationshipLine.startXProperty().bind(startParent.layoutXProperty().add(startParent.widthProperty().divide(2)));
-            relationshipLine.startYProperty().bind(startParent.layoutYProperty().add(startParent.heightProperty().divide(2)));
+            // Bind start points to the border of the source class
+            relationshipLine.startXProperty().bind(calculateBorderX(startParent, endParent));
+            relationshipLine.startYProperty().bind(calculateBorderY(startParent, endParent));
 
-            // Bind end points
-            relationshipLine.endXProperty().bind(endParent.layoutXProperty().add(endParent.widthProperty().divide(2)));
-            relationshipLine.endYProperty().bind(endParent.layoutYProperty().add(endParent.heightProperty().divide(2)));
+            // Bind end points to the border of the target class
+            relationshipLine.endXProperty().bind(calculateBorderX(endParent, startParent));
+            relationshipLine.endYProperty().bind(calculateBorderY(endParent, startParent));
 
             // Add the line to the canvas
             getChildren().add(relationshipLine);
 
-            System.out.println("Relationship added between " + startClass.ClassName + " and " + endClass.ClassName + ".");
+            System.out.println("Association relationship added between " + startClass.ClassName + " and " + endClass.ClassName + ".");
         }
 
-        else if (relationshipType == "composition") {
+
+        else if (relationshipType.equals("composition")) {
             // Get parent StackPanes
             StackPane wholeParent = (StackPane) startClass.getParent();
             StackPane partParent = (StackPane) endClass.getParent();
 
-            // Create a line and bind its start and end points
+            // Create a line and bind its start and end points using border calculations
             Line compositionLine = new Line();
             compositionLine.setStroke(Color.BLACK);
 
-            // Bind start points
-            compositionLine.startXProperty().bind(wholeParent.layoutXProperty().add(wholeParent.widthProperty().divide(2)));
-            compositionLine.startYProperty().bind(wholeParent.layoutYProperty().add(wholeParent.heightProperty().divide(2)));
+            // Bind start points to the border of the whole class (start of the relationship)
+            compositionLine.startXProperty().bind(calculateBorderX(wholeParent, partParent));
+            compositionLine.startYProperty().bind(calculateBorderY(wholeParent, partParent));
 
-            // Bind end points
-            compositionLine.endXProperty().bind(partParent.layoutXProperty().add(partParent.widthProperty().divide(2)));
-            compositionLine.endYProperty().bind(partParent.layoutYProperty().add(partParent.heightProperty().divide(2)));
+            // Bind end points to the border of the part class (end of the relationship)
+            compositionLine.endXProperty().bind(calculateBorderX(partParent, wholeParent));
+            compositionLine.endYProperty().bind(calculateBorderY(partParent, wholeParent));
 
             // Create a diamond shape for the composition
             Polygon diamond = new Polygon();
             diamond.getPoints().addAll(
-                    0.0, 0.0, // Top point
+                    0.0, 0.0,   // Top point
                     10.0, 10.0, // Right point
-                    0.0, 20.0, // Bottom point
+                    0.0, 20.0,  // Bottom point
                     -10.0, 10.0 // Left point
             );
             diamond.setFill(Color.BLACK);
@@ -241,9 +311,153 @@ public class ClassDiagramCanvasPanel extends Pane {
             getChildren().addAll(compositionLine, diamond);
 
             System.out.println("Composition relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
-
         }
+
+        else if (relationshipType.equals("aggregation")) {
+            // Get parent StackPanes
+            StackPane wholeParent = (StackPane) startClass.getParent();
+            StackPane partParent = (StackPane) endClass.getParent();
+
+            // Create a line and bind its start and end points using border calculations
+            Line aggregationLine = new Line();
+            aggregationLine.setStroke(Color.BLACK);
+
+            // Bind start points to the border of the whole class (start of the relationship)
+            aggregationLine.startXProperty().bind(calculateBorderX(wholeParent, partParent));
+            aggregationLine.startYProperty().bind(calculateBorderY(wholeParent, partParent));
+
+            // Bind end points to the border of the part class (end of the relationship)
+            aggregationLine.endXProperty().bind(calculateBorderX(partParent, wholeParent));
+            aggregationLine.endYProperty().bind(calculateBorderY(partParent, wholeParent));
+
+            // Create a hollow diamond shape for the aggregation
+            Polygon hollowDiamond = new Polygon();
+            hollowDiamond.getPoints().addAll(
+                    0.0, 0.0,   // Top point
+                    10.0, 10.0, // Right point
+                    0.0, 20.0,  // Bottom point
+                    -10.0, 10.0 // Left point
+            );
+            hollowDiamond.setFill(Color.WHITE);  // Hollow (empty inside)
+            hollowDiamond.setStroke(Color.BLACK); // Black border
+
+            // Bind the hollow diamond's position to the start of the line
+            hollowDiamond.layoutXProperty().bind(aggregationLine.startXProperty());
+            hollowDiamond.layoutYProperty().bind(aggregationLine.startYProperty().subtract(10)); // Offset for center alignment
+
+            // Add the line and hollow diamond to the canvas
+            getChildren().addAll(aggregationLine, hollowDiamond);
+
+            System.out.println("Aggregation relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
+        }
+
+
+        else if (relationshipType == "inheritance") {
+            // Get parent StackPanes
+            StackPane parentClassParent = (StackPane) startClass.getParent(); // Superclass
+            StackPane childClassParent = (StackPane) endClass.getParent(); // Subclass
+
+            // Create a line
+            Line inheritanceLine = new Line();
+            inheritanceLine.setStroke(Color.BLACK);
+
+            // Bind the line dynamically with border intersection
+            inheritanceLine.startXProperty().bind(calculateBorderX(parentClassParent, childClassParent));
+            inheritanceLine.startYProperty().bind(calculateBorderY(parentClassParent, childClassParent));
+            inheritanceLine.endXProperty().bind(calculateBorderX(childClassParent, parentClassParent));
+            inheritanceLine.endYProperty().bind(calculateBorderY(childClassParent, parentClassParent));
+
+            // Create a hollow triangle for inheritance
+            Polygon triangle = new Polygon();
+            triangle.getPoints().addAll(
+                    0.0, 0.0,  // Tip of the triangle
+                    -10.0, 20.0, // Bottom left corner
+                    10.0, 20.0   // Bottom right corner
+            );
+            triangle.setFill(Color.WHITE); // Hollow triangle
+            triangle.setStroke(Color.BLACK); // Black border
+
+            // Bind the triangle's position dynamically to the parent class border
+            triangle.layoutXProperty().bind(inheritanceLine.startXProperty());
+            triangle.layoutYProperty().bind(inheritanceLine.startYProperty());
+
+            // Add a listener to dynamically update the triangle's rotation
+            inheritanceLine.startXProperty().addListener((observable, oldValue, newValue) -> updateTriangleRotation(inheritanceLine, triangle));
+            inheritanceLine.startYProperty().addListener((observable, oldValue, newValue) -> updateTriangleRotation(inheritanceLine, triangle));
+            inheritanceLine.endXProperty().addListener((observable, oldValue, newValue) -> updateTriangleRotation(inheritanceLine, triangle));
+            inheritanceLine.endYProperty().addListener((observable, oldValue, newValue) -> updateTriangleRotation(inheritanceLine, triangle));
+
+
+            // Add the line and triangle to the canvas
+            getChildren().addAll(inheritanceLine, triangle);
+
+            System.out.println("Inheritance relationship added between " + startClass.ClassName + " (superclass) and " + endClass.ClassName + " (subclass).");
+        }
+
     }
+
+    private DoubleBinding calculateBorderX(StackPane source, StackPane target) {
+        return Bindings.createDoubleBinding(() -> {
+                    double sourceCenterX = source.getLayoutX() + source.getWidth() / 2;
+                    double sourceCenterY = source.getLayoutY() + source.getHeight() / 2;
+
+                    double targetCenterX = target.getLayoutX() + target.getWidth() / 2;
+                    double targetCenterY = target.getLayoutY() + target.getHeight() / 2;
+
+                    // Calculate direction vector
+                    double dx = targetCenterX - sourceCenterX;
+                    double dy = targetCenterY - sourceCenterY;
+
+                    // Calculate scaling factor to reach the border
+                    double scale = Math.min(
+                            Math.abs(source.getWidth() / 2 / dx),
+                            Math.abs(source.getHeight() / 2 / dy)
+                    );
+
+                    // Calculate border intersection point
+                    return sourceCenterX + dx * scale;
+                }, source.layoutXProperty(), source.layoutYProperty(),
+                target.layoutXProperty(), target.layoutYProperty());
+    }
+
+    private DoubleBinding calculateBorderY(StackPane source, StackPane target) {
+        return Bindings.createDoubleBinding(() -> {
+                    double sourceCenterX = source.getLayoutX() + source.getWidth() / 2;
+                    double sourceCenterY = source.getLayoutY() + source.getHeight() / 2;
+
+                    double targetCenterX = target.getLayoutX() + target.getWidth() / 2;
+                    double targetCenterY = target.getLayoutY() + target.getHeight() / 2;
+
+                    // Calculate direction vector
+                    double dx = targetCenterX - sourceCenterX;
+                    double dy = targetCenterY - sourceCenterY;
+
+                    // Calculate scaling factor to reach the border
+                    double scale = Math.min(
+                            Math.abs(source.getWidth() / 2 / dx),
+                            Math.abs(source.getHeight() / 2 / dy)
+                    );
+
+                    // Calculate border intersection point
+                    return sourceCenterY + dy * scale;
+                }, source.layoutXProperty(), source.layoutYProperty(),
+                target.layoutXProperty(), target.layoutYProperty());
+    }
+
+    private void updateTriangleRotation(Line line, Polygon triangle) {
+        double angle = calculateAngle(line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY());
+        triangle.setRotate(angle - 90); // Subtract 90 to make it point opposite
+    }
+
+
+    private double calculateAngle(double startX, double startY, double endX, double endY) {
+        double dx = endX - startX;
+        double dy = endY - startY;
+        return Math.toDegrees(Math.atan2(dy, dx));
+    }
+
+
+
 
 
 //    private void resetDrawingState() {

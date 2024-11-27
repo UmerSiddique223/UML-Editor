@@ -13,8 +13,8 @@ import java.util.ArrayList;
 // A panel representing a Class
 public  class ClassPanel extends VBox {
     public String ClassName;
-    private final ArrayList<String> attributes = new ArrayList<>();
-    private final ArrayList<String> methods = new ArrayList<>();
+    private final ArrayList<Attribute> attributes = new ArrayList<>();
+    private final ArrayList<Method> methods = new ArrayList<>();
 
     final Label titleLabel;
     private final TextArea attributesArea;
@@ -57,27 +57,68 @@ public  class ClassPanel extends VBox {
 
             MenuItem addAttribute = new MenuItem("Add Attribute");
             addAttribute.setOnAction(ev -> {
-                TextInputDialog dialog = new TextInputDialog();
-                dialog.setTitle("Add Attribute");
-                dialog.setHeaderText("Enter Attribute:");
-                dialog.showAndWait().ifPresent(attribute -> {
-                    attributes.add(attribute);
-                    updateAttributes();
+                // Dialog to get attribute details (name, type, access)
+                TextInputDialog nameDialog = new TextInputDialog();
+                nameDialog.setTitle("Add Attribute");
+                nameDialog.setHeaderText("Enter Attribute Name:");
+                nameDialog.showAndWait().ifPresent(name -> {
+                    TextInputDialog typeDialog = new TextInputDialog();
+                    typeDialog.setTitle("Add Attribute");
+                    typeDialog.setHeaderText("Enter Attribute Type:");
+                    typeDialog.showAndWait().ifPresent(type -> {
+                        TextInputDialog accessDialog = new TextInputDialog();
+                        accessDialog.setTitle("Add Attribute");
+                        accessDialog.setHeaderText("Enter Attribute Access Level (public, private, etc.):");
+                        accessDialog.showAndWait().ifPresent(access -> {
+                            // Create an attribute object with the collected information
+                            Attribute attribute = new Attribute(name, type, access);
+                            attributes.add(attribute);
+                            updateAttributes(); // Assuming you will update the UI with the new attribute list
+                        });
+                    });
                 });
             });
 
             MenuItem addMethod = new MenuItem("Add Method");
             addMethod.setOnAction(ev -> {
-                TextInputDialog dialog = new TextInputDialog();
-                dialog.setTitle("Add Method");
-                dialog.setHeaderText("Enter Method:");
-                dialog.showAndWait().ifPresent(method -> {
-                    methods.add(method);
-                    updateMethods();
+                // Dialog to get method details (name, return type, parameters, access)
+                TextInputDialog nameDialog = new TextInputDialog();
+                nameDialog.setTitle("Add Method");
+                nameDialog.setHeaderText("Enter Method Name:");
+                nameDialog.showAndWait().ifPresent(name -> {
+                    TextInputDialog returnTypeDialog = new TextInputDialog();
+                    returnTypeDialog.setTitle("Add Method");
+                    returnTypeDialog.setHeaderText("Enter Method Return Type:");
+                    returnTypeDialog.showAndWait().ifPresent(returnType -> {
+                        TextInputDialog accessDialog = new TextInputDialog();
+                        accessDialog.setTitle("Add Method");
+                        accessDialog.setHeaderText("Enter Method Access Level (public, private, etc.):");
+                        accessDialog.showAndWait().ifPresent(access -> {
+                            // Dialog to get method parameters
+                            TextInputDialog paramsDialog = new TextInputDialog();
+                            paramsDialog.setTitle("Add Method");
+                            paramsDialog.setHeaderText("Enter Method Parameters (comma separated, e.g., int a, String b):");
+                            paramsDialog.showAndWait().ifPresent(paramsStr -> {
+                                // Split the parameters by commas and create an ArrayList of parameters
+                                ArrayList<String> parameters = new ArrayList<>();
+                                if (!paramsStr.isEmpty()) {
+                                    String[] params = paramsStr.split(",");
+                                    for (String param : params) {
+                                        parameters.add(param.trim());
+                                    }
+                                }
+                                // Create a method object with the collected information
+                                Method method = new Method(name, returnType, parameters, access);
+                                methods.add(method);
+                                updateMethods(); // Assuming you will update the UI with the new method list
+                            });
+                        });
+                    });
                 });
             });
 
-            MenuItem delete = new MenuItem("Delete Class Diagram");
+
+            MenuItem delete = new MenuItem("Delete Class");
             delete.setOnAction(ev -> {
                 Pane parent = (Pane) getParent();
                 if (parent instanceof StackPane stackPane) {
@@ -93,10 +134,53 @@ public  class ClassPanel extends VBox {
     }
 
     private void updateAttributes() {
-        attributesArea.setText(String.join("\n", attributes));
+        StringBuilder attributesText = new StringBuilder();
+        for (Attribute attribute : attributes) {
+            String accessSymbol = getAccessSymbol(attribute.access);
+            attributesText.append(accessSymbol)
+                    .append(" ")
+                    .append(attribute.name)
+                    .append(" :")
+                    .append(attribute.type)
+                    .append("\n");
+        }
+        attributesArea.setText(attributesText.toString());
     }
 
     private void updateMethods() {
-        methodsArea.setText(String.join("\n", methods));
+        StringBuilder methodsText = new StringBuilder();
+        for (Method method : methods) {
+            String accessSymbol = getAccessSymbol(method.access);
+            methodsText.append(accessSymbol)
+                    .append(" ")
+                    .append(method.name)
+                    .append(" (");
+
+            // Join method parameters with commas
+            if (!method.parameters.isEmpty()) {
+                methodsText.append(String.join(", ", method.parameters));
+            }
+
+            methodsText.append(") :")
+                    .append(method.returnType)
+                    .append("\n");
+        }
+        methodsArea.setText(methodsText.toString());
     }
+
+    // Helper method to convert access type to symbol
+    private String getAccessSymbol(String access) {
+        switch (access) {
+            case "public":
+                return "+";
+            case "private":
+                return "-";
+            case "protected":
+                return "#";
+            default:
+                return "";  // Default case for unsupported access types
+        }
+    }
+
+
 }
