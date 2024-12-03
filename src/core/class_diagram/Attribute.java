@@ -10,4 +10,16 @@ public class Attribute {
         this.type = type;
         this.access = access;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getAccess() {
+        return access;
+    }
 }

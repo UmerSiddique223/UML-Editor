@@ -1,5 +1,6 @@
 package core.class_diagram;
 
+import bean.DiagramSaver;
 import bean.DragResizeBean;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
@@ -15,11 +16,20 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
 // Canvas for Class Diagrams
 public class ClassDiagramCanvasPanel extends Pane {
     ClassDiagram diagram;
     private String drawingMode = "";
+
+    private ArrayList<Relationship> relationships = new ArrayList<>(); // Store relationships
 
     public ClassDiagramCanvasPanel() {
         setStyle("-fx-background-color: white;");
@@ -29,6 +39,8 @@ public class ClassDiagramCanvasPanel extends Pane {
 //        setOnMouseMoved(this::handleMouseMove); // Add dynamic line updates.
 
     }
+
+
 
     public void setCurrentDiagram(ClassDiagram diagram) {
         this.diagram = diagram;
@@ -43,7 +55,7 @@ public class ClassDiagramCanvasPanel extends Pane {
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Add Class");
             dialog.setHeaderText("Enter Class Name:");
-            dialog.showAndWait().ifPresent(name -> addClassToCanvas(new ClassPanel(name, false), x, y));
+            dialog.showAndWait().ifPresent(name -> addClassToCanvas(new ClassPanel(name, false,x,y), x, y));
         });
 
         // Option to add an Interface
@@ -52,13 +64,24 @@ public class ClassDiagramCanvasPanel extends Pane {
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Add Interface");
             dialog.setHeaderText("Enter Interface Name:");
-            dialog.showAndWait().ifPresent(name -> addClassToCanvas(new ClassPanel(name, true), x, y));
+            dialog.showAndWait().ifPresent(name -> addClassToCanvas(new ClassPanel(name, true,x,y), x, y));
         });
 
         contextMenu.getItems().addAll(addClassDiagram, addInterfaceDiagram);
         contextMenu.show(this, screenX, screenY);
     }
 
+
+    public void saveDiagram(Stage parentStage) throws Exception {
+        System.out.println(diagram.Name+"  Name");
+        System.out.println(diagram+"    hnjnjkdssd");
+        if (diagram == null) {
+            System.out.println("No diagram to save.");
+            return;
+        }
+
+        DiagramSaver.saveDiagram(diagram);
+    }
 
     public void addClassToCanvas(ClassPanel classPanel, double x, double y) {
         javafx.scene.shape.Rectangle border = new Rectangle(200, 150);
@@ -78,9 +101,11 @@ public class ClassDiagramCanvasPanel extends Pane {
         container.setOnMousePressed(event -> handleClassDragStart(container, event));
         container.setOnMouseDragged(event -> handleClassDrag(container, event));
         container.setOnMouseReleased(event -> handleClassDragEnd(container));
+        ClassPanel classData = new ClassPanel(classPanel.getClassName(), classPanel.isInterface(), x, y);
 
         // Adding class to the Diagram class too:
-        diagram.addClass(classPanel);
+        diagram.addClass(classData);
+        System.out.println(diagram.Name+"  Name");
     }
 
     private double dragStartX;
@@ -154,57 +179,6 @@ public class ClassDiagramCanvasPanel extends Pane {
             }
         }
     }
-//        AbstractDiagramPanel clickedDiagram = findDiagramAt(event);
-//
-//        if (clickedDiagram == null) {
-//            return;
-//        }
-//
-//        if (startDiagram == null) {
-//            startDiagram = clickedDiagram;
-//            System.out.println("Start diagram selected.");
-//            createTempLine(startDiagram.getLayoutX() + startDiagram.getWidth() / 2,
-//                    startDiagram.getLayoutY() + startDiagram.getHeight() / 2);
-//        } else if (clickedDiagram != startDiagram) {
-//            endDiagram = clickedDiagram;
-//            System.out.println("End diagram selected.");
-//            finalizeRelationship();
-//        }
-//
-//    }
-
-
-//    private void handleMouseMove(MouseEvent event) {
-//        if (tempLine != null) {
-//            updateTempLine(event.getX(), event.getY());
-//        }
-//    }
-
-//    private void createTempLine(double x, double y) {
-//        tempLine = new Line();
-//        tempLine.setStartX(x);
-//        tempLine.setStartY(y);
-//        tempLine.setEndX(x);
-//        tempLine.setEndY(y);
-//        tempLine.setStroke(Color.GRAY);
-//        tempLine.getStrokeDashArray().addAll(5.0, 5.0);
-//
-//        getChildren().add(tempLine);
-//    }
-//
-//    private void updateTempLine(double x, double y) {
-//        if (tempLine != null) {
-//            tempLine.setEndX(x);
-//            tempLine.setEndY(y);
-//        }
-//    }
-//
-//    private void clearTempLine() {
-//        if (tempLine != null) {
-//            getChildren().remove(tempLine);
-//            tempLine = null;
-//        }
-//    }
 
     public void setRelationship(String relationshipType) {
         if (diagram == null || diagram.classes.isEmpty()) {
@@ -282,6 +256,8 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line to the canvas
             getChildren().add(relationshipLine);
+            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "association"));
+            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
 
             System.out.println("Association relationship added between " + startClass.ClassName + " and " + endClass.ClassName + ".");
         }
@@ -320,6 +296,8 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line and diamond to the canvas
             getChildren().addAll(compositionLine, diamond);
+            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "composition"));
+            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
 
             System.out.println("Composition relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
         }
@@ -358,6 +336,8 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line and hollow diamond to the canvas
             getChildren().addAll(aggregationLine, hollowDiamond);
+            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "aggregation"));
+            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
 
             System.out.println("Aggregation relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
         }
@@ -401,6 +381,8 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line and triangle to the canvas
             getChildren().addAll(inheritanceLine, triangle);
+            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "inheritance"));
+            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
 
             System.out.println("Inheritance relationship added between " + startClass.ClassName + " (superclass) and " + endClass.ClassName + " (subclass).");
         }
@@ -471,24 +453,6 @@ public class ClassDiagramCanvasPanel extends Pane {
 
 
 
-//    private void resetDrawingState() {
-//        startDiagram = null;
-//        endDiagram = null;
-//        drawingMode = "";
-//    }
 
-//    private AbstractDiagramPanel findDiagramAt(MouseEvent event) {
-//        Node node = (Node) event.getTarget();
-//        while (node != null && !(node instanceof AbstractDiagramPanel)) {
-//            node = node.getParent();
-//        }
-//        if (node == null) {
-//            System.out.println("No diagram found at clicked position.");
-//        } else {
-//
-//            System.out.println("Found diagram: " + ((AbstractDiagramPanel) node).getClass().getName());
-//        }
-//        return (AbstractDiagramPanel) node;
-//    }
 
 }

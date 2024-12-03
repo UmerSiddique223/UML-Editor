@@ -15,7 +15,7 @@ public class MainFrame extends Application {
     private BorderPane rootPane; // Main container
     private StackPane cardPane; // For switching between views
     private VBox homePanel;
-    private ClassDiagramCanvasPanel classDiagramCanvasPanel;
+    private static ClassDiagramCanvasPanel classDiagramCanvasPanel;
     private UsecaseToolbar usecaseToolbar; // Left-side toolbar
     private ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
 
@@ -132,6 +132,11 @@ public class MainFrame extends Application {
         });
 
     }
+
+    public static ClassDiagramCanvasPanel getClassDiagramCanvasPanel() {
+        return classDiagramCanvasPanel;
+    }
+
 
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);

@@ -35,7 +35,7 @@ public class ClassDiagramToolbar extends VBox {
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Add Class");
             dialog.setHeaderText("Enter Class Name:");
-            dialog.showAndWait().ifPresent(name -> classDiagramCanvasPanel.addClassToCanvas(new ClassPanel(name, false), 100, 100));
+            dialog.showAndWait().ifPresent(name -> classDiagramCanvasPanel.addClassToCanvas(new ClassPanel(name, false,100,100), 100, 100));
         });
 
         getChildren().add(addClassButton);
