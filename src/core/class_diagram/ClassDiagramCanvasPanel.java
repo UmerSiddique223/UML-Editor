@@ -81,6 +81,12 @@ public class ClassDiagramCanvasPanel extends Pane {
 
         // Adding class to the Diagram class too:
         diagram.addClass(classPanel);
+
+        // Dynamically adjust canvas size
+        double newWidth = Math.max(getWidth(), x + 300); // 300 ensures buffer space
+        double newHeight = Math.max(getHeight(), y + 300);
+
+        setPrefSize(newWidth, newHeight);
     }
 
     private double dragStartX;
@@ -99,6 +105,18 @@ public class ClassDiagramCanvasPanel extends Pane {
         // Update the position of the container during dragging
         container.setLayoutX(newX);
         container.setLayoutY(newY);
+
+        // For Scrollable Canvas
+        double newerX = container.getLayoutX();
+        double newerY = container.getLayoutY();
+
+        // Expand canvas dimensions if the dragged element exceeds bounds
+        if (newerX + container.getWidth() > getWidth()) {
+            setPrefWidth(newerX + container.getWidth() + 100); // 100 for buffer
+        }
+        if (newerY + container.getHeight() > getHeight()) {
+            setPrefHeight(newerY + container.getHeight() + 100);
+        }
     }
 
     private void handleClassDragEnd(StackPane container) {
