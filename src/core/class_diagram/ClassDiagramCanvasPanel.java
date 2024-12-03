@@ -1,6 +1,6 @@
 package core.class_diagram;
 
-import bean.DiagramSaver;
+import data.DiagramSaver;
 import bean.DragResizeBean;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
@@ -16,12 +16,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 // Canvas for Class Diagrams

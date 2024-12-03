@@ -1,4 +1,4 @@
-package bean;
+package data;
 
 import core.class_diagram.Attribute;
 import core.class_diagram.ClassDiagram;

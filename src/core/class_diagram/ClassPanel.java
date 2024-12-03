@@ -232,4 +232,13 @@ public class ClassPanel extends VBox {
     public ArrayList<Method> getMethods() {
         return methods;
     }
+
+    public void addAttribute(Attribute attribute) {
+        attributes.add(attribute);
+
+    }
+
+    public void addMethod(Method method) {
+        methods.add(method);
+    }
 }

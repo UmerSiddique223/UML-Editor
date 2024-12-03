@@ -97,8 +97,8 @@ public class MenuBarUI extends MenuBar {
             String selectedFile = fileList.getSelectionModel().getSelectedItem();
             if (selectedFile != null) {
                 try {
+                    MainFrame.loadDiagram(new File("User diagrams" + File.separator + selectedFile));
                     // Call the load diagram logic
-//                    MainFrame.loadDiagram(new File("User diagrams" + File.separator + selectedFile));
                 } catch (Exception ex) {
                     showErrorDialog("Error", "Failed to load diagram: " + ex.getMessage());
                 }
