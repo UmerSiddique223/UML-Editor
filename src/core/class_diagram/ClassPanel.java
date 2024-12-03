@@ -10,38 +10,59 @@ import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 
-// A panel representing a Class
-public  class ClassPanel extends VBox {
+public class ClassPanel extends VBox {
     public String ClassName;
     private final ArrayList<Attribute> attributes = new ArrayList<>();
     private final ArrayList<Method> methods = new ArrayList<>();
+    private final boolean isInterface;
 
-    final Label titleLabel;
+    private final Label typeLabel; // <<interface>> or empty for classes
+    private final Label titleLabel;
     private final TextArea attributesArea;
     private final TextArea methodsArea;
 
-    public ClassPanel(String className) {
-        ClassName = className;
-        setStyle("-fx-border-color: black; -fx-border-width: 2px; -fx-background-color: white;");
+    public ClassPanel(String name, boolean isInterface) {
+        this.ClassName = name;
+        this.isInterface = isInterface;
+        setStyle(isInterface
+                ? "-fx-border-color: black; -fx-border-width: 2px; -fx-background-color: white;"
+                : "-fx-border-color: black; -fx-border-width: 2px; -fx-background-color: white;");
         setPrefSize(200, 150);
 
-        // Title
-        titleLabel = new Label(className);
+        // Type Label (<<interface>> if it's an interface)
+        typeLabel = new Label(isInterface ? "<<interface>>" : "");
+        typeLabel.setStyle("-fx-font-size: 12px; -fx-font-style: italic;");
+        typeLabel.setMaxWidth(Double.MAX_VALUE);
+        typeLabel.setAlignment(Pos.CENTER);
+
+        // Title Label
+        titleLabel = new Label(name);
         titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         titleLabel.setMaxWidth(Double.MAX_VALUE);
         titleLabel.setAlignment(Pos.CENTER);
         propagateEvents(titleLabel);
-        // Attributes Section
-        attributesArea = new TextArea("Attributes...");
+
+        // Attributes Section (hidden for interfaces)
+        attributesArea = new TextArea("");
         attributesArea.setEditable(false);
         attributesArea.setWrapText(true);
         propagateEvents(attributesArea);
+
         // Methods Section
-        methodsArea = new TextArea("Methods...");
+        methodsArea = new TextArea("");
         methodsArea.setEditable(false);
         methodsArea.setWrapText(true);
         propagateEvents(methodsArea);
-        getChildren().addAll(titleLabel, attributesArea, methodsArea);
+
+        // Add UI elements conditionally
+        getChildren().add(typeLabel);
+        getChildren().add(titleLabel);
+        if (!isInterface) {
+            getChildren().add(attributesArea); // Classes have attributes
+        }
+        getChildren().add(methodsArea); // Both have methods
+
+        setAlignment(Pos.CENTER);
         setOnMouseClicked(this::handleContextMenu);
     }
 
@@ -51,37 +72,40 @@ public  class ClassPanel extends VBox {
             this.fireEvent(event);
         });
     }
+
     private void handleContextMenu(MouseEvent e) {
         if (e.getButton() == MouseButton.SECONDARY) {
             ContextMenu contextMenu = new ContextMenu();
 
-            MenuItem addAttribute = new MenuItem("Add Attribute");
-            addAttribute.setOnAction(ev -> {
-                // Dialog to get attribute details (name, type, access)
-                TextInputDialog nameDialog = new TextInputDialog();
-                nameDialog.setTitle("Add Attribute");
-                nameDialog.setHeaderText("Enter Attribute Name:");
-                nameDialog.showAndWait().ifPresent(name -> {
-                    TextInputDialog typeDialog = new TextInputDialog();
-                    typeDialog.setTitle("Add Attribute");
-                    typeDialog.setHeaderText("Enter Attribute Type:");
-                    typeDialog.showAndWait().ifPresent(type -> {
-                        TextInputDialog accessDialog = new TextInputDialog();
-                        accessDialog.setTitle("Add Attribute");
-                        accessDialog.setHeaderText("Enter Attribute Access Level (public, private, etc.):");
-                        accessDialog.showAndWait().ifPresent(access -> {
-                            // Create an attribute object with the collected information
-                            Attribute attribute = new Attribute(name, type, access);
-                            attributes.add(attribute);
-                            updateAttributes(); // Assuming you will update the UI with the new attribute list
+            if (!isInterface) {
+                // Add Attribute (only for classes)
+                MenuItem addAttribute = new MenuItem("Add Attribute");
+                addAttribute.setOnAction(ev -> {
+                    TextInputDialog nameDialog = new TextInputDialog();
+                    nameDialog.setTitle("Add Attribute");
+                    nameDialog.setHeaderText("Enter Attribute Name:");
+                    nameDialog.showAndWait().ifPresent(name -> {
+                        TextInputDialog typeDialog = new TextInputDialog();
+                        typeDialog.setTitle("Add Attribute");
+                        typeDialog.setHeaderText("Enter Attribute Type:");
+                        typeDialog.showAndWait().ifPresent(type -> {
+                            TextInputDialog accessDialog = new TextInputDialog();
+                            accessDialog.setTitle("Add Attribute");
+                            accessDialog.setHeaderText("Enter Attribute Access Level (public, private, etc.):");
+                            accessDialog.showAndWait().ifPresent(access -> {
+                                Attribute attribute = new Attribute(name, type, access);
+                                attributes.add(attribute);
+                                updateAttributes();
+                            });
                         });
                     });
                 });
-            });
+                contextMenu.getItems().add(addAttribute);
+            }
 
+            // Add Method
             MenuItem addMethod = new MenuItem("Add Method");
             addMethod.setOnAction(ev -> {
-                // Dialog to get method details (name, return type, parameters, access)
                 TextInputDialog nameDialog = new TextInputDialog();
                 nameDialog.setTitle("Add Method");
                 nameDialog.setHeaderText("Enter Method Name:");
@@ -90,35 +114,27 @@ public  class ClassPanel extends VBox {
                     returnTypeDialog.setTitle("Add Method");
                     returnTypeDialog.setHeaderText("Enter Method Return Type:");
                     returnTypeDialog.showAndWait().ifPresent(returnType -> {
-                        TextInputDialog accessDialog = new TextInputDialog();
-                        accessDialog.setTitle("Add Method");
-                        accessDialog.setHeaderText("Enter Method Access Level (public, private, etc.):");
-                        accessDialog.showAndWait().ifPresent(access -> {
-                            // Dialog to get method parameters
-                            TextInputDialog paramsDialog = new TextInputDialog();
-                            paramsDialog.setTitle("Add Method");
-                            paramsDialog.setHeaderText("Enter Method Parameters (comma separated, e.g., int a, String b):");
-                            paramsDialog.showAndWait().ifPresent(paramsStr -> {
-                                // Split the parameters by commas and create an ArrayList of parameters
-                                ArrayList<String> parameters = new ArrayList<>();
-                                if (!paramsStr.isEmpty()) {
-                                    String[] params = paramsStr.split(",");
-                                    for (String param : params) {
-                                        parameters.add(param.trim());
-                                    }
+                        TextInputDialog paramsDialog = new TextInputDialog();
+                        paramsDialog.setTitle("Add Method");
+                        paramsDialog.setHeaderText("Enter Method Parameters (comma separated, e.g., int a, String b):");
+                        paramsDialog.showAndWait().ifPresent(paramsStr -> {
+                            ArrayList<String> parameters = new ArrayList<>();
+                            if (!paramsStr.isEmpty()) {
+                                String[] params = paramsStr.split(",");
+                                for (String param : params) {
+                                    parameters.add(param.trim());
                                 }
-                                // Create a method object with the collected information
-                                Method method = new Method(name, returnType, parameters, access);
-                                methods.add(method);
-                                updateMethods(); // Assuming you will update the UI with the new method list
-                            });
+                            }
+                            Method method = new Method(name, returnType, parameters, "public"); // Default public for interfaces
+                            methods.add(method);
+                            updateMethods();
                         });
                     });
                 });
             });
 
-
-            MenuItem delete = new MenuItem("Delete Class");
+            // Delete Panel
+            MenuItem delete = new MenuItem("Delete " + (isInterface ? "Interface" : "Class"));
             delete.setOnAction(ev -> {
                 Pane parent = (Pane) getParent();
                 if (parent instanceof StackPane stackPane) {
@@ -127,7 +143,7 @@ public  class ClassPanel extends VBox {
                 }
             });
 
-            contextMenu.getItems().addAll(addAttribute, addMethod, delete);
+            contextMenu.getItems().addAll(addMethod, delete);
             contextMenu.show(this, e.getScreenX(), e.getScreenY());
             e.consume();
         }
@@ -150,17 +166,14 @@ public  class ClassPanel extends VBox {
     private void updateMethods() {
         StringBuilder methodsText = new StringBuilder();
         for (Method method : methods) {
-            String accessSymbol = getAccessSymbol(method.access);
+            String accessSymbol = isInterface ? "+" : getAccessSymbol(method.access);
             methodsText.append(accessSymbol)
                     .append(" ")
                     .append(method.name)
                     .append(" (");
-
-            // Join method parameters with commas
             if (!method.parameters.isEmpty()) {
                 methodsText.append(String.join(", ", method.parameters));
             }
-
             methodsText.append(") :")
                     .append(method.returnType)
                     .append("\n");
@@ -168,7 +181,6 @@ public  class ClassPanel extends VBox {
         methodsArea.setText(methodsText.toString());
     }
 
-    // Helper method to convert access type to symbol
     private String getAccessSymbol(String access) {
         switch (access) {
             case "public":
@@ -178,9 +190,7 @@ public  class ClassPanel extends VBox {
             case "protected":
                 return "#";
             default:
-                return "";  // Default case for unsupported access types
+                return ""; // Default for unsupported access types
         }
     }
-
-
 }

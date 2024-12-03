@@ -37,17 +37,28 @@ public class ClassDiagramCanvasPanel extends Pane {
     private void showContextMenu(double screenX, double screenY, double x, double y) {
         ContextMenu contextMenu = new ContextMenu();
 
+        // Option to add a Class
         MenuItem addClassDiagram = new MenuItem("Add Class");
         addClassDiagram.setOnAction(ev -> {
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Add Class");
             dialog.setHeaderText("Enter Class Name:");
-            dialog.showAndWait().ifPresent(name -> addClassToCanvas(new ClassPanel(name), x, y));
+            dialog.showAndWait().ifPresent(name -> addClassToCanvas(new ClassPanel(name, false), x, y));
         });
 
-        contextMenu.getItems().add(addClassDiagram);
+        // Option to add an Interface
+        MenuItem addInterfaceDiagram = new MenuItem("Add Interface");
+        addInterfaceDiagram.setOnAction(ev -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Add Interface");
+            dialog.setHeaderText("Enter Interface Name:");
+            dialog.showAndWait().ifPresent(name -> addClassToCanvas(new ClassPanel(name, true), x, y));
+        });
+
+        contextMenu.getItems().addAll(addClassDiagram, addInterfaceDiagram);
         contextMenu.show(this, screenX, screenY);
     }
+
 
     public void addClassToCanvas(ClassPanel classPanel, double x, double y) {
         javafx.scene.shape.Rectangle border = new Rectangle(200, 150);
