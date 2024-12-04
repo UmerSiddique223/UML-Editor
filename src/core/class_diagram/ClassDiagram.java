@@ -11,8 +11,7 @@ public class ClassDiagram implements Serializable {
     private List<Relationship> relationships = new ArrayList<>();
 
     public ClassDiagram(String name) {
-        classes = new ArrayList<ClassPanel>();
-
+        classes = new ArrayList<>();
         Name = name;
     }
 

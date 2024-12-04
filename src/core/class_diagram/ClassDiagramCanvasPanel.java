@@ -97,10 +97,10 @@ public class ClassDiagramCanvasPanel extends Pane {
         container.setOnMousePressed(event -> handleClassDragStart(container, event));
         container.setOnMouseDragged(event -> handleClassDrag(container, event));
         container.setOnMouseReleased(event -> handleClassDragEnd(container));
-        ClassPanel classData = new ClassPanel(classPanel.getClassName(), classPanel.isInterface(), x, y);
+//        ClassPanel classData = new ClassPanel(classPanel.getClassName(), classPanel.isInterface(), x, y);
 
         // Adding class to the Diagram class too:
-        diagram.addClass(classData);
+        diagram.addClass(classPanel);
         System.out.println(diagram.Name+"  Name");
     }
 
