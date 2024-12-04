@@ -15,15 +15,27 @@ public class ClassPanel extends VBox {
     private final ArrayList<Attribute> attributes = new ArrayList<>();
     private final ArrayList<Method> methods = new ArrayList<>();
     private final boolean isInterface;
+    public double x; // X-coordinate on the canvas
+    public double y; // Y-coordinate on the canvas
 
     private final Label typeLabel; // <<interface>> or empty for classes
     private final Label titleLabel;
     private final TextArea attributesArea;
     private final TextArea methodsArea;
+    public void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
 
-    public ClassPanel(String name, boolean isInterface) {
+    public ArrayList<Attribute> getAttributes() {
+        return attributes;
+    }
+
+    public ClassPanel(String name, boolean isInterface, double x, double y) {
         this.ClassName = name;
         this.isInterface = isInterface;
+        this.x = x;
+        this.y = y;
         setStyle(isInterface
                 ? "-fx-border-color: black; -fx-border-width: 2px; -fx-background-color: white;"
                 : "-fx-border-color: black; -fx-border-width: 2px; -fx-background-color: white;");
@@ -73,6 +85,21 @@ public class ClassPanel extends VBox {
         });
     }
 
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
     private void handleContextMenu(MouseEvent e) {
         if (e.getButton() == MouseButton.SECONDARY) {
             ContextMenu contextMenu = new ContextMenu();
@@ -192,5 +219,26 @@ public class ClassPanel extends VBox {
             default:
                 return ""; // Default for unsupported access types
         }
+    }
+
+    public boolean isInterface() {
+        return  isInterface;
+    }
+
+    public String getClassName() {
+        return ClassName;
+    }
+
+    public ArrayList<Method> getMethods() {
+        return methods;
+    }
+
+    public void addAttribute(Attribute attribute) {
+        attributes.add(attribute);
+
+    }
+
+    public void addMethod(Method method) {
+        methods.add(method);
     }
 }

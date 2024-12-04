@@ -8,6 +8,22 @@ public class Method {
     public ArrayList<String> parameters;
     public String access;
 
+    public String getName() {
+        return name;
+    }
+
+    public String getReturnType() {
+        return returnType;
+    }
+
+    public ArrayList<String> getParameters() {
+        return parameters;
+    }
+
+    public String getAccess() {
+        return access;
+    }
+
     public Method(String name, String returnType, ArrayList<String> parameters, String access) {
         this.name = name;
         this.returnType = returnType;
