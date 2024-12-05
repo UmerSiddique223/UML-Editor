@@ -19,6 +19,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 // Canvas for Class Diagrams
 public class ClassDiagramCanvasPanel extends Pane {
@@ -36,10 +38,18 @@ public class ClassDiagramCanvasPanel extends Pane {
 
     }
 
-
+    public ClassDiagram getDiagram() {
+        return diagram;
+    }
 
     public void setCurrentDiagram(ClassDiagram diagram) {
         this.diagram = diagram;
+    }
+
+    public void createAndAddClassToCanvas(boolean isInterface){
+        String newName = "Class" + (diagram.getClasses().size() + 1);
+        ClassPanel newClass = new ClassPanel(newName, isInterface, 100, 100, this);
+        addClassToCanvas(newClass, 100, 100);
     }
 
     private void showContextMenu(double screenX, double screenY, double x, double y) {
@@ -48,19 +58,13 @@ public class ClassDiagramCanvasPanel extends Pane {
         // Option to add a Class
         MenuItem addClassDiagram = new MenuItem("Add Class");
         addClassDiagram.setOnAction(ev -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Add Class");
-            dialog.setHeaderText("Enter Class Name:");
-            dialog.showAndWait().ifPresent(name -> addClassToCanvas(new ClassPanel(name, false,x,y), x, y));
+            addClassToCanvas(new ClassPanel("Class" + (diagram.getClasses().size() + 1), false, x, y, this), x, y);
         });
 
         // Option to add an Interface
         MenuItem addInterfaceDiagram = new MenuItem("Add Interface");
         addInterfaceDiagram.setOnAction(ev -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Add Interface");
-            dialog.setHeaderText("Enter Interface Name:");
-            dialog.showAndWait().ifPresent(name -> addClassToCanvas(new ClassPanel(name, true,x,y), x, y));
+            addClassToCanvas(new ClassPanel("Interface" + (diagram.getClasses().size() + 1), true, x, y, this), x, y);
         });
 
         contextMenu.getItems().addAll(addClassDiagram, addInterfaceDiagram);
@@ -69,8 +73,8 @@ public class ClassDiagramCanvasPanel extends Pane {
 
 
     public void saveDiagram(Stage parentStage) throws Exception {
-        System.out.println(diagram.Name+"  Name");
-        System.out.println(diagram+"    hnjnjkdssd");
+        System.out.println(diagram.Name + "  Name");
+        System.out.println(diagram + "    hnjnjkdssd");
         if (diagram == null) {
             System.out.println("No diagram to save.");
             return;
@@ -78,6 +82,26 @@ public class ClassDiagramCanvasPanel extends Pane {
 
         DiagramSaver.saveDiagram(diagram);
     }
+
+    public Consumer<ClassPanel> onClassAdded = classPanel -> {
+    };
+    public Consumer<ClassPanel> onClassRemoved = classPanel -> {
+    };
+    public BiConsumer<ClassPanel, String> onClassRename = (classPanel, oldName) -> {};
+
+
+    public void setOnClassAdded(Consumer<ClassPanel> listener) {
+        onClassAdded = listener;
+    }
+
+    public void setOnClassRemoved(Consumer<ClassPanel> listener) {
+        onClassRemoved = listener;
+    }
+
+    public void setOnClassRename(BiConsumer<ClassPanel, String> listener) {
+        onClassRename = listener;
+    }
+
 
     public void addClassToCanvas(ClassPanel classPanel, double x, double y) {
         javafx.scene.shape.Rectangle border = new Rectangle(200, 150);
@@ -89,54 +113,23 @@ public class ClassDiagramCanvasPanel extends Pane {
         container.setLayoutX(x);
         container.setLayoutY(y);
 
-        // Apply resizing functionality
-        DragResizeBean.apply(container, this,classPanel.getClassName());
+        // Appling the Dragging and Resizing functionality
+        DragResizeBean.apply(container, this, classPanel.getClassName());
+
+        container.setOnMouseReleased(event -> handleClassDragEnd(container));
+
 
         getChildren().add(container);
 
-        // Attach drag event handlers
-//        container.setOnMousePressed(event -> handleClassDragStart(container, event));
-//        container.setOnMouseDragged(event -> handleClassDrag(container, event));
-//        container.setOnMouseReleased(event -> handleClassDragEnd(container));
-
         diagram.addClass(classPanel);
 
-        // Dynamically adjust canvas size
-        double newWidth = Math.max(getWidth(), x + 300); // 300 ensures buffer space
-        double newHeight = Math.max(getHeight(), y + 300);
+        onClassAdded.accept(classPanel);
 
-        setPrefSize(newWidth, newHeight);
     }
 
     private double dragStartX;
     private double dragStartY;
 
-    private void handleClassDragStart(StackPane container, MouseEvent event) {
-        dragStartX = event.getSceneX() - container.getLayoutX();
-        dragStartY = event.getSceneY() - container.getLayoutY();
-    }
-
-    private void handleClassDrag(StackPane container, MouseEvent event) {
-        // Get the current position of the mouse relative to the canvas
-        double newX = event.getSceneX() - dragStartX;
-        double newY = event.getSceneY() - dragStartY;
-
-        // Update the position of the container during dragging
-        container.setLayoutX(newX);
-        container.setLayoutY(newY);
-
-        // For Scrollable Canvas
-        double newerX = container.getLayoutX();
-        double newerY = container.getLayoutY();
-
-        // Expand canvas dimensions if the dragged element exceeds bounds
-        if (newerX + container.getWidth() > getWidth()) {
-            setPrefWidth(newerX + container.getWidth() + 100); // 100 for buffer
-        }
-        if (newerY + container.getHeight() > getHeight()) {
-            setPrefHeight(newerY + container.getHeight() + 100);
-        }
-    }
 
     private void handleClassDragEnd(StackPane container) {
         // After the mouse is released, check for overlaps and adjust position
@@ -170,12 +163,13 @@ public class ClassDiagramCanvasPanel extends Pane {
 
     public void updatePosition(String className, double x, double y) {
 
-        if ( diagram.getClass(className) != null) {
+        if (diagram.getClass(className) != null) {
             diagram.getClass(className).setPosition(x, y);
         }
-        ClassPanel c=  diagram.getClass(className);
+        ClassPanel c = diagram.getClass(className);
 
     }
+
     // Method to check if two StackPanes are overlapping
     private boolean isOverlapping(StackPane container, StackPane otherContainer) {
         double x1 = container.getLayoutX();
@@ -251,7 +245,7 @@ public class ClassDiagramCanvasPanel extends Pane {
 //        }
 //    }
 
-    public void setRelationship(String relationshipType,String startingClass,String endingClass) {
+    public void setRelationship(String relationshipType, String startingClass, String endingClass) {
         if (diagram == null || diagram.classes.isEmpty()) {
             System.out.println("No classes available to create a relationship.");
             return;
@@ -309,15 +303,14 @@ public class ClassDiagramCanvasPanel extends Pane {
                 System.out.println("Cannot create a relationship between the same class.");
                 return;
             }
-        }
-        else{
+        } else {
             endClass = diagram.getClass(endingClass);
             startClass = diagram.getClass(startingClass);
 
         }
         // Drawing Lines:
-        System.out.println(startClass.getX()+"    aa     "+startClass.getY());
-        System.out.println(endClass.getX()+"    a      "+endClass.getY());
+        System.out.println(startClass.getX() + "    aa     " + startClass.getY());
+        System.out.println(endClass.getX() + "    a      " + endClass.getY());
 
         if (relationshipType.equals("association")) {
             // Get parent StackPanes
@@ -342,10 +335,7 @@ public class ClassDiagramCanvasPanel extends Pane {
             diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
 
             System.out.println("Association relationship added between " + startClass.ClassName + " and " + endClass.ClassName + ".");
-        }
-
-
-        else if (relationshipType.equals("composition")) {
+        } else if (relationshipType.equals("composition")) {
             // Get parent StackPanes
             StackPane wholeParent = (StackPane) startClass.getParent();
             StackPane partParent = (StackPane) endClass.getParent();
@@ -382,9 +372,7 @@ public class ClassDiagramCanvasPanel extends Pane {
             diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
 
             System.out.println("Composition relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
-        }
-
-        else if (relationshipType.equals("aggregation")) {
+        } else if (relationshipType.equals("aggregation")) {
             // Get parent StackPanes
             StackPane wholeParent = (StackPane) startClass.getParent();
             StackPane partParent = (StackPane) endClass.getParent();
@@ -422,10 +410,7 @@ public class ClassDiagramCanvasPanel extends Pane {
             diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
 
             System.out.println("Aggregation relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
-        }
-
-
-        else if (relationshipType == "inheritance") {
+        } else if (relationshipType == "inheritance") {
             // Get parent StackPanes
             StackPane parentClassParent = (StackPane) startClass.getParent(); // Superclass
             StackPane childClassParent = (StackPane) endClass.getParent(); // Subclass
@@ -530,9 +515,6 @@ public class ClassDiagramCanvasPanel extends Pane {
         double dy = endY - startY;
         return Math.toDegrees(Math.atan2(dy, dx));
     }
-
-
-
 
 
 //    private void resetDrawingState() {

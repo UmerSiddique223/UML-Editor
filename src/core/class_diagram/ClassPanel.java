@@ -12,14 +12,15 @@ import java.util.ArrayList;
 
 public class ClassPanel extends VBox {
     public String ClassName;
+    public ClassDiagramCanvasPanel ParentCanvas;
     private final ArrayList<Attribute> attributes = new ArrayList<>();
     private final ArrayList<Method> methods = new ArrayList<>();
     private final boolean isInterface;
     public double x; // X-coordinate on the canvas
     public double y; // Y-coordinate on the canvas
 
-    private final Label typeLabel; // <<interface>> or empty for classes
-    private final Label titleLabel;
+    private Label typeLabel; // <<interface>> or empty for classes
+    private TextField titleField;
     private final TextArea attributesArea;
     private final TextArea methodsArea;
     public void setPosition(double x, double y) {
@@ -31,11 +32,12 @@ public class ClassPanel extends VBox {
         return attributes;
     }
 
-    public ClassPanel(String name, boolean isInterface, double x, double y) {
+    public ClassPanel(String name, boolean isInterface, double x, double y, ClassDiagramCanvasPanel canvas) {
         this.ClassName = name;
         this.isInterface = isInterface;
         this.x = x;
         this.y = y;
+        this.ParentCanvas = canvas;
         setStyle(isInterface
                 ? "-fx-border-color: black; -fx-border-width: 2px; -fx-background-color: white;"
                 : "-fx-border-color: black; -fx-border-width: 2px; -fx-background-color: white;");
@@ -47,12 +49,22 @@ public class ClassPanel extends VBox {
         typeLabel.setMaxWidth(Double.MAX_VALUE);
         typeLabel.setAlignment(Pos.CENTER);
 
-        // Title Label
-        titleLabel = new Label(name);
-        titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        titleLabel.setMaxWidth(Double.MAX_VALUE);
-        titleLabel.setAlignment(Pos.CENTER);
-        propagateEvents(titleLabel);
+        // Title TextField (editable)
+        titleField = new TextField(name);
+        titleField.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-alignment: center;");
+        titleField.setMaxWidth(Double.MAX_VALUE);
+        titleField.setAlignment(Pos.CENTER);
+
+        // Update ClassName when text is changed
+        titleField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.trim().isEmpty()) {
+                String previousName = ClassName; // Store the old name
+                ClassName = newValue.trim();
+                
+                canvas.onClassRename.accept(this, previousName); // Pass both the class and old name
+            }
+        });
+        propagateEvents(titleField);
 
         // Attributes Section (hidden for interfaces)
         attributesArea = new TextArea("");
@@ -68,7 +80,7 @@ public class ClassPanel extends VBox {
 
         // Add UI elements conditionally
         getChildren().add(typeLabel);
-        getChildren().add(titleLabel);
+        getChildren().add(this.titleField);
         if (!isInterface) {
             getChildren().add(attributesArea); // Classes have attributes
         }

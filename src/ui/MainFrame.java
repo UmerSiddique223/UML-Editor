@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 import java.util.ArrayList;
 
 
@@ -95,7 +96,7 @@ public class MainFrame extends Application {
     private void updateHomePanel(String diagramType) {
         homePanel.getChildren().removeIf(node -> node instanceof VBox || node instanceof Label);
 
-        // Descriptive heading
+        // Adding Description text
         Label description = new Label();
         description.setStyle("-fx-font-size: 16px; -fx-text-fill: #4682b4; -fx-font-weight: bold;");
         if ("Class Diagram".equals(diagramType)) {
@@ -104,13 +105,13 @@ public class MainFrame extends Application {
             description.setText("Create or Load a Use Case Diagram\nUse this tool to create use case diagrams.");
         }
 
-        // Create and Load section
+        // Main Container for all the elements
         VBox actionBox = new VBox(20);
         actionBox.setAlignment(Pos.CENTER);
         actionBox.setPadding(new Insets(20));
         actionBox.setStyle("-fx-background-color: #f9f9f9; -fx-border-color: #d3d3d3; -fx-border-width: 1; -fx-padding: 10;");
 
-        // Create Section
+        // Create Class diagram Section
         HBox createSection = new HBox(10);
         createSection.setAlignment(Pos.CENTER);
 
@@ -124,8 +125,6 @@ public class MainFrame extends Application {
             if (projectName.isEmpty()) {
                 showAlert("Project name cannot be empty!");
             } else {
-                showAlert("Creating new " + diagramType + " project: " + projectName);
-
                 if (diagramType.equals("Class Diagram")) {
                     showClassDiagram(projectName);
                 } else if (diagramType.equals("Use Case Diagram")) {
@@ -178,6 +177,7 @@ public class MainFrame extends Application {
         homePanel.getChildren().addAll(description, actionBox);
     }
 
+    // Styles for buttons
     private final String filledButtonStyle =
             "-fx-font-size: 16px; " +
                     "-fx-font-weight: bold; " +
@@ -229,8 +229,9 @@ public class MainFrame extends Application {
         ));
     }
 
+    // Function to initiate class diagram canvas
     private void showClassDiagram(String name) {
-        // Create the canvas panel
+        // Main canvas panel for Class Diagram:
         classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
         classDiagramCanvasPanel.setStyle("-fx-background-color: lightgray;");
         classDiagramCanvasPanel.setPrefSize(2000, 2000); // Set a large preferred size for scrolling
@@ -238,28 +239,29 @@ public class MainFrame extends Application {
         // Wrap the canvas panel in a ScrollPane
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setContent(classDiagramCanvasPanel); // Set the canvas as content
-        scrollPane.setPannable(true);                   // Allow panning
+        scrollPane.setPannable(false);                   // Allow panning
         scrollPane.setFitToWidth(false);                // Disable auto-fit for width
         scrollPane.setFitToHeight(false);               // Disable auto-fit for height
 
-
         // Create a new class diagram
         ClassDiagram classDiagram = new ClassDiagram(name);
+        // Set the current diagram in the canvas
+        classDiagramCanvasPanel.setCurrentDiagram(classDiagram);
 
         // Create the toolbar and associate it with the canvas
         classDiagramToolbar = new ClassDiagramToolbar(classDiagramCanvasPanel);
         rootPane.setLeft(classDiagramToolbar);
 
-        // Set the current diagram in the canvas
-        classDiagramCanvasPanel.setCurrentDiagram(classDiagram);
-
         // Replace the contents of cardPane with the scrollable canvas
         cardPane.getChildren().setAll(scrollPane);
+
+        // Create the properties bar
+        ClassDiagramPropertiesBar propertiesBar = new ClassDiagramPropertiesBar(name, classDiagramCanvasPanel);
+        rootPane.setRight(propertiesBar);
 
         // Make the toolbar visible
         classDiagramToolbar.setVisible(true);
 
-//        switchToTab("Class");
     }
 
 
@@ -291,6 +293,8 @@ public class MainFrame extends Application {
 
 
     public static void loadDiagram(File file) throws Exception {
+        classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
+
         // Parse the XML file
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -317,7 +321,7 @@ public class MainFrame extends Application {
             double y = Double.parseDouble(classElement.getAttribute("y"));
 
 
-            ClassPanel classPanel = new ClassPanel(className, isInterface, x, y);
+            ClassPanel classPanel = new ClassPanel(className, isInterface, x, y, classDiagramCanvasPanel);
 
             // Load attributes
             NodeList attributeNodes = ((Element) classElement.getElementsByTagName("Attributes").item(0)).getElementsByTagName("Attribute");
@@ -365,7 +369,6 @@ public class MainFrame extends Application {
         }
 
         // Initialize the canvas panel with the loaded diagram
-        classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
         ClassDiagram c_diagram = new ClassDiagram(diagramName);
         classDiagramCanvasPanel.setCurrentDiagram(c_diagram);
 
@@ -377,14 +380,11 @@ public class MainFrame extends Application {
         for (ClassPanel c : classDiagram.getClasses()) {
             classDiagramCanvasPanel.addClassToCanvas(c, 100, 100);
 
-        for(Relationship r: classDiagram.getRelationships()){
-            classDiagramCanvasPanel.setRelationship(r.type,r.startClass,r.endClass);
+            for (Relationship r : classDiagram.getRelationships()) {
+                classDiagramCanvasPanel.setRelationship(r.type, r.startClass, r.endClass);
+
+            }
 
         }
-
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Diagram>
+    <Name>asdas</Name>
+    <Classes>
+        <Class name="asdasd" type="class" x="312.8" y="217.60000000000002">
+            <Attributes/>
+            <Methods/>
+        </Class>
+        <Class name="gfg" type="class" x="669.5999999999999" y="292.0">
+            <Attributes/>
+            <Methods/>
+        </Class>
+    </Classes>
+    <Relationships>
+        <Relationship endClass="gfg" startClass="asdasd" type="composition"/>
+    </Relationships>
+</Diagram>
