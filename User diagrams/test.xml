@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Diagram>
+    <Name>test</Name>
+    <Classes>
+        <Class name="1" type="class" x="175.2" y="221.6">
+            <Attributes/>
+            <Methods/>
+        </Class>
+        <Class name="2" type="class" x="636.8000000000001" y="267.99999999999994">
+            <Attributes/>
+            <Methods/>
+        </Class>
+    </Classes>
+    <Relationships>
+        <Relationship endClass="2" startClass="1" type="composition"/>
+    </Relationships>
+</Diagram>

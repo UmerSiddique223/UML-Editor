@@ -174,6 +174,7 @@ public class MainFrame extends Application {
     }
 
 
+
     public static void loadDiagram(File file) throws Exception {
         // Parse the XML file
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -199,6 +200,7 @@ public class MainFrame extends Application {
             boolean isInterface = "interface".equals(classElement.getAttribute("type"));
             double x = Double.parseDouble(classElement.getAttribute("x"));
             double y = Double.parseDouble(classElement.getAttribute("y"));
+
 
 
             ClassPanel classPanel = new ClassPanel(className, isInterface,x, y);
@@ -259,10 +261,15 @@ public class MainFrame extends Application {
         cardPane.getChildren().setAll(classDiagramCanvasPanel);
 
         for(ClassPanel c: classDiagram.getClasses()){
-        classDiagramCanvasPanel.addClassToCanvas(c,100,100);
-
+        classDiagramCanvasPanel.addClassToCanvas(c,c.getX(),c.getY());
 
         }
+
+        for(Relationship r: classDiagram.getRelationships()){
+            classDiagramCanvasPanel.setRelationship(r.type,r.startClass,r.endClass);
+
+        }
+
     }
     public static void main(String[] args) {
         launch(args);

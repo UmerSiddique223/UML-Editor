@@ -85,23 +85,21 @@ public class ClassDiagramCanvasPanel extends Pane {
         border.setStroke(Color.BLACK);
 
         StackPane container = new StackPane(border, classPanel);
+
         container.setLayoutX(x);
         container.setLayoutY(y);
 
         // Apply resizing functionality
-        DragResizeBean.apply(container, this);
+        DragResizeBean.apply(container, this,classPanel.getClassName());
 
         getChildren().add(container);
 
         // Attach drag event handlers
-        container.setOnMousePressed(event -> handleClassDragStart(container, event));
-        container.setOnMouseDragged(event -> handleClassDrag(container, event));
-        container.setOnMouseReleased(event -> handleClassDragEnd(container));
-//        ClassPanel classData = new ClassPanel(classPanel.getClassName(), classPanel.isInterface(), x, y);
+//        container.setOnMousePressed(event -> handleClassDragStart(container, event));
+//        container.setOnMouseDragged(event -> handleClassDrag(container, event));
+//        container.setOnMouseReleased(event -> handleClassDragEnd(container));
 
-        // Adding class to the Diagram class too:
         diagram.addClass(classPanel);
-        System.out.println(diagram.Name+"  Name");
 
         // Dynamically adjust canvas size
         double newWidth = Math.max(getWidth(), x + 300); // 300 ensures buffer space
@@ -170,6 +168,14 @@ public class ClassDiagramCanvasPanel extends Pane {
         }
     }
 
+    public void updatePosition(String className, double x, double y) {
+
+        if ( diagram.getClass(className) != null) {
+            diagram.getClass(className).setPosition(x, y);
+        }
+        ClassPanel c=  diagram.getClass(className);
+
+    }
     // Method to check if two StackPanes are overlapping
     private boolean isOverlapping(StackPane container, StackPane otherContainer) {
         double x1 = container.getLayoutX();
@@ -245,62 +251,73 @@ public class ClassDiagramCanvasPanel extends Pane {
 //        }
 //    }
 
-    public void setRelationship(String relationshipType) {
+    public void setRelationship(String relationshipType,String startingClass,String endingClass) {
         if (diagram == null || diagram.classes.isEmpty()) {
             System.out.println("No classes available to create a relationship.");
             return;
         }
 
+
         ClassPanel startClass = null;
         ClassPanel endClass = null;
 
         // Prompt user to select the start class
-        ChoiceDialog<String> startClassDialog = new ChoiceDialog<>();
-        startClassDialog.getItems().addAll(diagram.getClassList());
-        startClassDialog.setTitle("Select Start Class");
-        startClassDialog.setHeaderText("Select the start class for the relationship:");
-        startClassDialog.setContentText("Start Class:");
+        if (startingClass == null || endingClass == null) {
+            // Handle the case where either startingClass or endingClass is null
 
-        String startClassName = startClassDialog.showAndWait().orElse(null);
-        if (startClassName == null) {
-            System.out.println("Start class selection was canceled.");
-            return;
-        }
-        else {
-            startClass = diagram.getClass(startClassName);
-            if (startClass == null) {
-                System.out.println("Class " + startClassName + " not found.");
+            ChoiceDialog<String> startClassDialog = new ChoiceDialog<>();
+            startClassDialog.getItems().addAll(diagram.getClassList());
+            startClassDialog.setTitle("Select Start Class");
+            startClassDialog.setHeaderText("Select the start class for the relationship:");
+            startClassDialog.setContentText("Start Class:");
+
+            String startClassName = startClassDialog.showAndWait().orElse(null);
+            if (startClassName == null) {
+                System.out.println("Start class selection was canceled.");
+                return;
+            } else {
+                startClass = diagram.getClass(startClassName);
+
+                if (startClass == null) {
+                    System.out.println("Class " + startClassName + " not found.");
+                    return;
+                }
+            }
+
+            // Prompt user to select the end class
+            ChoiceDialog<String> endClassDialog = new ChoiceDialog<>();
+            endClassDialog.getItems().addAll(diagram.getClassList());
+            endClassDialog.setTitle("Select End Class");
+            endClassDialog.setHeaderText("Select the end class for the relationship:");
+            endClassDialog.setContentText("End Class:");
+
+            String endClassName = endClassDialog.showAndWait().orElse(null);
+            if (endClassName == null) {
+                System.out.println("End class selection was canceled.");
+                return;
+            } else {
+                endClass = diagram.getClass(endClassName);
+                if (endClass == null) {
+                    System.out.println("Class " + endClassName + " not found.");
+                    return;
+                }
+            }
+
+
+            // Prevent creating a relationship with the same class
+            if (startClass == endClass) {
+                System.out.println("Cannot create a relationship between the same class.");
                 return;
             }
         }
+        else{
+            endClass = diagram.getClass(endingClass);
+            startClass = diagram.getClass(startingClass);
 
-        // Prompt user to select the end class
-        ChoiceDialog<String> endClassDialog = new ChoiceDialog<>();
-        endClassDialog.getItems().addAll(diagram.getClassList());
-        endClassDialog.setTitle("Select End Class");
-        endClassDialog.setHeaderText("Select the end class for the relationship:");
-        endClassDialog.setContentText("End Class:");
-
-        String endClassName = endClassDialog.showAndWait().orElse(null);
-        if (endClassName == null) {
-            System.out.println("End class selection was canceled.");
-            return;
         }
-        else {
-            endClass = diagram.getClass(endClassName);
-            if (endClass == null) {
-                System.out.println("Class " + endClassName + " not found.");
-                return;
-            }
-        }
-
-        // Prevent creating a relationship with the same class
-        if (startClass == endClass) {
-            System.out.println("Cannot create a relationship between the same class.");
-            return;
-        }
-
         // Drawing Lines:
+        System.out.println(startClass.getX()+"    aa     "+startClass.getY());
+        System.out.println(endClass.getX()+"    a      "+endClass.getY());
 
         if (relationshipType.equals("association")) {
             // Get parent StackPanes

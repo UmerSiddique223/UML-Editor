@@ -1,5 +1,6 @@
 package bean;
 
+import core.class_diagram.ClassPanel;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;
@@ -8,6 +9,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import ui.MainFrame;
 
 import java.util.ArrayList;
 
@@ -15,11 +17,11 @@ public class DragResizeBean {
 
     private static final double RESIZE_MARGIN = 10;
 
-    public static void apply(Region target, Pane parent) {
-        enableDragAndResize(target, parent);
+    public static void apply(Region target, Pane parent, String name) {
+        enableDragAndResize(target, parent,name);
     }
 
-    private static void enableDragAndResize(Region target, Pane parent) {
+    private static void enableDragAndResize(Region target, Pane parent,String name) {
         final double[] dragData = new double[6];
         final boolean[] resizing = {false};
 
@@ -62,12 +64,13 @@ public class DragResizeBean {
 
                 target.setLayoutX(newX);
                 target.setLayoutY(newY);
+                MainFrame.getClassDiagramCanvasPanel().updatePosition(name,newX,newY);
             }
         });
-
         target.setOnMouseReleased(event -> {
             target.setCursor(Cursor.DEFAULT);
             resizing[0] = false;
+
         });
     }
 
@@ -135,7 +138,12 @@ public class DragResizeBean {
             newHeight = Math.min(Math.max(50, dragData[3] - deltaY), newLayoutY + dragData[3]);
             newLayoutY = Math.max(0, Math.min(newLayoutY + deltaY, parent.getHeight() - newHeight));
         }
-
+        if (target instanceof StackPane && ((StackPane) target).getChildren().get(1) instanceof ClassPanel) {
+            ClassPanel classPanel = (ClassPanel) ((StackPane) target).getChildren().get(1);
+            classPanel.x = newLayoutX;
+            classPanel.y = newLayoutY;
+            System.out.println("Updated after resize: x=" + classPanel.x + ", y=" + classPanel.y);
+        }
         target.setPrefSize(newWidth, newHeight);
         target.setLayoutX(newLayoutX);
         target.setLayoutY(newLayoutY);

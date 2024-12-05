@@ -52,6 +52,7 @@ public class DiagramSaver {
             classElement.setAttribute("x", String.valueOf(classPanel.x));
             classElement.setAttribute("y", String.valueOf(classPanel.y));
 
+
             // Save attributes
             Element attributesElement = document.createElement("Attributes");
             for (Attribute attribute : classPanel.getAttributes()) {
