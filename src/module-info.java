@@ -8,5 +8,7 @@ module UML.Editor {
     requires javafx.fxml;
     requires java.desktop;
     requires java.sql;
+    exports ui to javafx.graphics;
+
     opens UMLMain;
 }

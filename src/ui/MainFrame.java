@@ -13,6 +13,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import java.util.ArrayList;
 
+import core.usecase_diagram.UseCaseDiagramPanel;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,6 +27,7 @@ public class MainFrame extends Application {
     private static ClassDiagramCanvasPanel classDiagramCanvasPanel;
     private UsecaseToolbar usecaseToolbar; // Left-side toolbar
     private static ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
+    private UseCaseDiagramPanel useCaseDiagramPanel;
 
     @Override
     public void start(Stage primaryStage) {
@@ -144,22 +146,18 @@ public class MainFrame extends Application {
         });
     }
 
-
     private void showUseCaseDiagram() {
-
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Add Use Case Diagram");
         dialog.setHeaderText("Enter Use Case Diagram Name:");
         dialog.showAndWait().ifPresent(name -> {
-            UseCaseDiagramPanel useCaseDiagramPanel = new UseCaseDiagramPanel(name);
-            usecaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
-            usecaseToolbar.loadToolsForDiagramType("UseCaseDiagram");
-            rootPane.setLeft(usecaseToolbar);
-            usecaseToolbar.setVisible(true);
-
+            useCaseDiagramPanel = new UseCaseDiagramPanel();
+            useCaseDiagramPanel.setStyle("-fx-background-color: lightblue;");
+            UsecaseToolbar useCaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
+            rootPane.setLeft(useCaseToolbar);
             cardPane.getChildren().setAll(useCaseDiagramPanel);
+            useCaseToolbar.setVisible(true);
         });
-
     }
 
     public static ClassDiagramCanvasPanel getClassDiagramCanvasPanel() {
