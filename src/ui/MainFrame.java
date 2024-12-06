@@ -3,6 +3,7 @@ package ui;
 import core.class_diagram.*;
 import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -368,6 +369,12 @@ public class MainFrame extends Application {
             classDiagram.addRelationship(relationship);
         }
 
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setContent(classDiagramCanvasPanel); // Set the canvas as content
+        scrollPane.setPannable(false);                   // Allow panning
+        scrollPane.setFitToWidth(false);                // Disable auto-fit for width
+        scrollPane.setFitToHeight(false);
         // Initialize the canvas panel with the loaded diagram
         ClassDiagram c_diagram = new ClassDiagram(diagramName);
         classDiagramCanvasPanel.setCurrentDiagram(c_diagram);
@@ -378,13 +385,15 @@ public class MainFrame extends Application {
         cardPane.getChildren().setAll(classDiagramCanvasPanel);
 
         for (ClassPanel c : classDiagram.getClasses()) {
-            classDiagramCanvasPanel.addClassToCanvas(c, c.getX(), c.getY());
+            classDiagramCanvasPanel.addClassToCanvas(new ClassPanel(c.getClassName(),c.isInterface(), c.getX(), c.getY(), classDiagramCanvasPanel), c.getX(), c.getY());
 
-            for (Relationship r : classDiagram.getRelationships()) {
-                classDiagramCanvasPanel.setRelationship(r.type, r.startClass, r.endClass);
-
-            }
 
         }
+        Platform.runLater(() -> {
+            for (Relationship r : classDiagram.getRelationships()) {
+                classDiagramCanvasPanel.setRelationship(r.type, r.startClass, r.endClass);
+            }
+        });
+
     }
 }

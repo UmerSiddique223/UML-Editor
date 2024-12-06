@@ -32,10 +32,18 @@ public class ClassDiagramToolbar extends VBox {
 //        ContextMenu contextMenu = new ContextMenu();
 
         addClassButton.setOnAction(ev -> {
-            classDiagramCanvasPanel.createAndAddClassToCanvas(false);
+            classDiagramCanvasPanel.enableClassPlacementMode(false); // false = regular class, true = interface
+        });
+        Button addInterfaceButton = new Button("Add Interface");
+
+
+        addInterfaceButton.setOnAction(ev -> {
+            classDiagramCanvasPanel.enableClassPlacementMode(true); // false = regular class, true = interface
         });
 
+
         getChildren().add(addClassButton);
+        getChildren().add(addInterfaceButton);
 
         Button button1 = new Button("Association");
         button1.setOnAction(e -> classDiagramCanvasPanel.setRelationship("association",null,null));

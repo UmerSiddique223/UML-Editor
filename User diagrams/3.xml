@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Diagram>
+    <Name>3</Name>
+    <Classes>
+        <Class name="Class1" type="class" x="129.60000000000002" y="42.39999999999999">
+            <Attributes/>
+            <Methods/>
+        </Class>
+        <Class name="Class2" type="class" x="435.20000000000016" y="315.2">
+            <Attributes/>
+            <Methods/>
+        </Class>
+        <Class name="Class3" type="class" x="593.6" y="55.2">
+            <Attributes/>
+            <Methods/>
+        </Class>
+        <Class name="Class4" type="class" x="161.59999999999997" y="347.2">
+            <Attributes/>
+            <Methods/>
+        </Class>
+    </Classes>
+    <Relationships>
+        <Relationship endClass="Class3" startClass="Class1" type="aggregation"/>
+    </Relationships>
+</Diagram>

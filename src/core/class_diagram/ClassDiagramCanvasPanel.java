@@ -4,6 +4,8 @@ import data.DiagramSaver;
 import bean.DragResizeBean;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
+import javafx.geometry.Bounds;
+import javafx.scene.Cursor;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -46,10 +48,10 @@ public class ClassDiagramCanvasPanel extends Pane {
         this.diagram = diagram;
     }
 
-    public void createAndAddClassToCanvas(boolean isInterface){
+    public void createAndAddClassToCanvasAt(double x, double y, boolean isInterface) {
         String newName = "Class" + (diagram.getClasses().size() + 1);
-        ClassPanel newClass = new ClassPanel(newName, isInterface, 100, 100, this);
-        addClassToCanvas(newClass, 100, 100);
+        ClassPanel newClass = new ClassPanel(newName, isInterface, x, y, this);
+        addClassToCanvas(newClass, x, y);
     }
 
     private void showContextMenu(double screenX, double screenY, double x, double y) {
@@ -69,7 +71,19 @@ public class ClassDiagramCanvasPanel extends Pane {
 
         contextMenu.getItems().addAll(addClassDiagram, addInterfaceDiagram);
         contextMenu.show(this, screenX, screenY);
+
+        // Add a click listener to hide the context menu when clicking outside
+        getScene().addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+            if (!contextMenu.isShowing()) {
+                return; // No need to hide if the menu is already hidden
+            }
+
+            if (!contextMenu.getSkin().getNode().contains(event.getX(), event.getY())) {
+                contextMenu.hide(); // Hide the context menu
+            }
+        });
     }
+
 
 
     public void saveDiagram(Stage parentStage) throws Exception {
@@ -125,6 +139,25 @@ public class ClassDiagramCanvasPanel extends Pane {
 
         onClassAdded.accept(classPanel);
 
+    }
+
+    public void enableClassPlacementMode(boolean isInterface) {
+        // Change the cursor to a plus icon
+        setCursor(Cursor.CROSSHAIR); // or use a custom cursor if preferred
+
+        // Set a one-time click listener
+        setOnMouseClicked(event -> {
+            // Get the mouse click location
+            double x = event.getX();
+            double y = event.getY();
+
+            // Create and add the class
+            createAndAddClassToCanvasAt(x, y, isInterface);
+
+            // Reset the cursor and remove the listener
+            setCursor(Cursor.DEFAULT);
+            setOnMouseClicked(null); // Remove the listener to avoid creating multiple classes
+        });
     }
 
     private double dragStartX;
@@ -244,6 +277,64 @@ public class ClassDiagramCanvasPanel extends Pane {
 //        }
 //    }
 
+    private void createDeleteContextMenu(final Line relationshipLine, final String startClassName, final String endClassName, final String relationshipType) {
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem deleteItem = new MenuItem("Delete");
+        contextMenu.getItems().add(deleteItem);
+
+        deleteItem.setOnAction(event -> {
+            // Remove the visual representation of the relationship
+            getChildren().remove(relationshipLine);
+
+            // Remove the relationship from the list based on its type
+            relationships.removeIf(rel ->
+                    rel.getStartClass().equals(startClassName) &&
+                            rel.getEndClass().equals(endClassName) &&
+                            rel.getType().equals(relationshipType)
+            );
+
+            // Remove the relationship from the diagram
+            diagram.removeRelationship(startClassName, endClassName, relationshipType);
+        });
+
+        // Create an invisible hitbox around the line
+        Rectangle hitBox = new Rectangle();
+        hitBox.setFill(Color.TRANSPARENT); // Make it invisible
+        hitBox.setStrokeWidth(0); // Ensure no visual border
+
+        // Match the dimensions of the hitbox to the line's bounds, with a buffer
+        updateHitBox(hitBox, relationshipLine);
+
+        // Add the hitbox to the scene (if needed)
+        getChildren().add(hitBox);
+
+        // Update the hitbox when the line changes
+        relationshipLine.boundsInParentProperty().addListener((observable, oldValue, newValue) -> {
+            updateHitBox(hitBox, relationshipLine);
+        });
+
+        // Show the context menu on a click within the hitbox
+        hitBox.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.SECONDARY) { // Right-click
+                contextMenu.show(hitBox, event.getScreenX(), event.getScreenY());
+                event.consume();
+            }
+        });
+    }
+
+    // Helper function to update the hitbox's bounds
+    private void updateHitBox(Rectangle hitBox, Line relationshipLine) {
+        Bounds bounds = relationshipLine.getBoundsInParent();
+
+        // Add a buffer around the line for easier interaction
+        double buffer = 10;
+        hitBox.setX(bounds.getMinX() - buffer);
+        hitBox.setY(bounds.getMinY() - buffer);
+        hitBox.setWidth(bounds.getWidth() + 2 * buffer);
+        hitBox.setHeight(bounds.getHeight() + 2 * buffer);
+    }
+
+
     public void setRelationship(String relationshipType, String startingClass, String endingClass) {
         if (diagram == null || diagram.classes.isEmpty()) {
             System.out.println("No classes available to create a relationship.");
@@ -319,6 +410,8 @@ public class ClassDiagramCanvasPanel extends Pane {
             StackPane startParent = (StackPane) startClass.getParent();
             StackPane endParent = (StackPane) endClass.getParent();
 
+            System.out.println(startParent.getLayoutX() + "    " + startParent.getLayoutY());
+            System.out.println(endParent.getLayoutX() + "    " + endParent.getLayoutY());
             // Create a line and bind its start and end points using border calculations
             Line relationshipLine = new Line();
             relationshipLine.setStroke(Color.BLACK);
@@ -331,11 +424,12 @@ public class ClassDiagramCanvasPanel extends Pane {
             relationshipLine.endXProperty().bind(calculateBorderX(endParent, startParent));
             relationshipLine.endYProperty().bind(calculateBorderY(endParent, startParent));
 
-            // Add the line to the canvas
+
+
             getChildren().add(relationshipLine);
             relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "association"));
             diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
-
+            createDeleteContextMenu(relationshipLine, startClass.ClassName, endClass.ClassName, "association");
             System.out.println("Association relationship added between " + startClass.ClassName + " and " + endClass.ClassName + ".");
         } else if (relationshipType.equals("composition")) {
             // Get parent StackPanes
@@ -372,6 +466,7 @@ public class ClassDiagramCanvasPanel extends Pane {
             getChildren().addAll(compositionLine, diamond);
             relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "composition"));
             diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
+            createDeleteContextMenu(compositionLine, startClass.ClassName, endClass.ClassName, "composition");
 
             System.out.println("Composition relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
         } else if (relationshipType.equals("aggregation")) {
@@ -410,7 +505,7 @@ public class ClassDiagramCanvasPanel extends Pane {
             getChildren().addAll(aggregationLine, hollowDiamond);
             relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "aggregation"));
             diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
-
+            createDeleteContextMenu(aggregationLine, startClass.ClassName, endClass.ClassName, "aggregation");
             System.out.println("Aggregation relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
         } else if (relationshipType == "inheritance") {
             // Get parent StackPanes
@@ -452,7 +547,7 @@ public class ClassDiagramCanvasPanel extends Pane {
             getChildren().addAll(inheritanceLine, triangle);
             relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "inheritance"));
             diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
-
+            createDeleteContextMenu(inheritanceLine, startClass.ClassName, endClass.ClassName, "inheritance");
             System.out.println("Inheritance relationship added between " + startClass.ClassName + " (superclass) and " + endClass.ClassName + " (subclass).");
         }
 

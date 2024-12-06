@@ -39,6 +39,22 @@ public class ClassDiagram implements Serializable {
         }
         return list;
     }
+    public void removeClass(String className) {
+        for (ClassPanel c : classes) {
+            if (c.ClassName.equals(className)) {
+                classes.remove(c);
+                break;
+            }
+        }
+    }
+    public void removeRelationship(String startClass, String endClass, String type) {
+        for (Relationship r : relationships) {
+            if (r.startClass.equals(startClass) && r.endClass.equals(endClass) && r.type.equals(type)) {
+                relationships.remove(r);
+                break;
+            }
+        }
+    }
 
     public ClassPanel getClass(String className) {
         for (ClassPanel c : classes) {

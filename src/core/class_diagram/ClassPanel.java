@@ -7,6 +7,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import ui.MainFrame;
 
 import java.util.ArrayList;
 
@@ -180,6 +181,7 @@ public class ClassPanel extends VBox {
                     Pane grandParent = (Pane) stackPane.getParent();
                     grandParent.getChildren().remove(stackPane);
                 }
+                MainFrame.getClassDiagramCanvasPanel().getDiagram().removeClass(ClassName);
             });
 
             contextMenu.getItems().addAll(addMethod, delete);
