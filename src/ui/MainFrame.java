@@ -378,7 +378,7 @@ public class MainFrame extends Application {
         cardPane.getChildren().setAll(classDiagramCanvasPanel);
 
         for (ClassPanel c : classDiagram.getClasses()) {
-            classDiagramCanvasPanel.addClassToCanvas(c, 100, 100);
+            classDiagramCanvasPanel.addClassToCanvas(c, c.getX(), c.getY());
 
             for (Relationship r : classDiagram.getRelationships()) {
                 classDiagramCanvasPanel.setRelationship(r.type, r.startClass, r.endClass);

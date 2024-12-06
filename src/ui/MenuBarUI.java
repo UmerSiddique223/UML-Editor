@@ -101,6 +101,7 @@ public class MenuBarUI extends MenuBar {
                     // Call the load diagram logic
                 } catch (Exception ex) {
                     showErrorDialog("Error", "Failed to load diagram: " + ex.getMessage());
+                    System.out.println("Failed to load diagram: " + ex.getMessage());
                 }
                 loadStage.close();
             }

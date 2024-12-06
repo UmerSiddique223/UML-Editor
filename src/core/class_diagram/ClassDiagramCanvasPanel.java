@@ -116,7 +116,7 @@ public class ClassDiagramCanvasPanel extends Pane {
         // Appling the Dragging and Resizing functionality
         DragResizeBean.apply(container, this, classPanel.getClassName());
 
-        container.setOnMouseReleased(event -> handleClassDragEnd(container));
+//        container.setOnMouseReleased(event -> handleClassDragEnd(container));
 
 
         getChildren().add(container);
@@ -162,11 +162,10 @@ public class ClassDiagramCanvasPanel extends Pane {
     }
 
     public void updatePosition(String className, double x, double y) {
-
+        System.out.println("Updating position of " + className + " to (" + x + ", " + y + ")");
         if (diagram.getClass(className) != null) {
             diagram.getClass(className).setPosition(x, y);
         }
-        ClassPanel c = diagram.getClass(className);
 
     }
 
@@ -306,7 +305,10 @@ public class ClassDiagramCanvasPanel extends Pane {
         } else {
             endClass = diagram.getClass(endingClass);
             startClass = diagram.getClass(startingClass);
-
+            if (startClass == null || endClass == null) {
+                System.out.println("One or both classes not found.");
+                return;
+            }
         }
         // Drawing Lines:
         System.out.println(startClass.getX() + "    aa     " + startClass.getY());
