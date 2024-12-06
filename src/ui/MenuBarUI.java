@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -40,10 +41,24 @@ public class MenuBarUI extends MenuBar {
         // Edit Menu
         Menu editMenu = new Menu("Edit");
 
+
         MenuItem undo = new MenuItem("Undo");
         MenuItem redo = new MenuItem("Redo");
         MenuItem delete = new MenuItem("Delete");
 
+        undo.setOnAction(e -> {
+            Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+            if (currentPanel instanceof UndoableDiagramPanel) {
+                ((UndoableDiagramPanel) currentPanel).undo();
+            }
+        });
+
+        redo.setOnAction(e -> {
+            Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+            if (currentPanel instanceof UndoableDiagramPanel) {
+                ((UndoableDiagramPanel) currentPanel).redo();
+            }
+        });
         editMenu.getItems().addAll(undo, redo, delete);
 
         // View Menu

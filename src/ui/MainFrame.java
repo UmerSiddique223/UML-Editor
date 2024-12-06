@@ -25,9 +25,9 @@ public class MainFrame extends Application {
     private static StackPane cardPane; // For switching between views
     private VBox homePanel;
     private static ClassDiagramCanvasPanel classDiagramCanvasPanel;
-    private UsecaseToolbar usecaseToolbar; // Left-side toolbar
     private static ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
     private UseCaseDiagramPanel useCaseDiagramPanel;
+    private static Pane currentDiagramPanel;
 
     @Override
     public void start(Stage primaryStage) {
@@ -144,6 +144,8 @@ public class MainFrame extends Application {
             // Make the toolbar visible
             classDiagramToolbar.setVisible(true);
         });
+        currentDiagramPanel = classDiagramCanvasPanel;
+
     }
 
     private void showUseCaseDiagram() {
@@ -157,8 +159,16 @@ public class MainFrame extends Application {
             rootPane.setLeft(useCaseToolbar);
             cardPane.getChildren().setAll(useCaseDiagramPanel);
             useCaseToolbar.setVisible(true);
+            currentDiagramPanel = useCaseDiagramPanel;
+
         });
     }
+
+
+    public static Pane getCurrentDiagramPanel() {
+        return currentDiagramPanel;
+    }
+
 
     public static ClassDiagramCanvasPanel getClassDiagramCanvasPanel() {
         return classDiagramCanvasPanel;
