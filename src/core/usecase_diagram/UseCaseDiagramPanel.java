@@ -17,6 +17,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.scene.text.Text;
+import ui.ActorShape;
 import ui.UndoableDiagramPanel;
 
 import java.io.InputStream;
@@ -329,16 +330,17 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     public ActorComponent addActor(double x, double y) {
         StackPane actorContainer = new StackPane();
         if (actorImage != null) {
-            ImageView actorView = new ImageView(actorImage);
-            actorView.setFitWidth(60);
-            actorView.setFitHeight(60);
-            actorContainer.getChildren().add(actorView);
+
+            ActorShape actorShape = new ActorShape("Actor");
+            actorContainer.getChildren().add(actorShape);
         } else {
             Circle fallbackActor = new Circle(30, Color.LIGHTGRAY);
             fallbackActor.setStroke(Color.BLACK);
             Text actorText = new Text("Actor");
             actorContainer.getChildren().addAll(fallbackActor, actorText);
         }
+
+
 
         actorContainer.setLayoutX(x);
         actorContainer.setLayoutY(y);
