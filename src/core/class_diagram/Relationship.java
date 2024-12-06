@@ -15,16 +15,4 @@ public class Relationship implements Serializable {
         this.endClass = endClass;
         this.type = type;
     }
-
-    public String getStartClass() {
-        return startClass;
-    }
-
-    public String getEndClass() {
-        return endClass;
-    }
-
-    public String getType() {
-        return type;
-    }
 }

@@ -93,9 +93,9 @@ public class DiagramSaver {
         Element relationshipsElement = document.createElement("Relationships");
         for (Relationship relationship : diagram.getRelationships()) {
             Element relationshipElement = document.createElement("Relationship");
-            relationshipElement.setAttribute("startClass", relationship.startClass);
-            relationshipElement.setAttribute("endClass", relationship.endClass);
-            relationshipElement.setAttribute("type", relationship.type);
+            relationshipElement.setAttribute("startClass", relationship.getStartClass());
+            relationshipElement.setAttribute("endClass", relationship.getEndClass());
+            relationshipElement.setAttribute("type", relationship.getType());
             relationshipsElement.appendChild(relationshipElement);
         }
         rootElement.appendChild(relationshipsElement);

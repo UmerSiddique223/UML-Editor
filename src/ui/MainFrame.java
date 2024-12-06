@@ -395,7 +395,7 @@ public class MainFrame extends Application {
         }
         Platform.runLater(() -> {
             for (Relationship r : classDiagram.getRelationships()) {
-                classDiagramCanvasPanel.setRelationship(r.type, r.startClass, r.endClass);
+                classDiagramCanvasPanel.setRelationship(r.getType(), r.getStartClass(), r.getEndClass());
             }
         });
 

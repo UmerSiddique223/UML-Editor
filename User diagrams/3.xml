@@ -6,11 +6,7 @@
             <Attributes/>
             <Methods/>
         </Class>
-        <Class name="Class2" type="class" x="435.20000000000016" y="315.2">
-            <Attributes/>
-            <Methods/>
-        </Class>
-        <Class name="Class3" type="class" x="593.6" y="55.2">
+        <Class name="Class2" type="class" x="446.4000000000002" y="314.4">
             <Attributes/>
             <Methods/>
         </Class>
@@ -18,8 +14,13 @@
             <Attributes/>
             <Methods/>
         </Class>
+        <Class name="Class4" type="class" x="480.0" y="90.39999999999999">
+            <Attributes/>
+            <Methods/>
+        </Class>
     </Classes>
     <Relationships>
-        <Relationship endClass="Class3" startClass="Class1" type="aggregation"/>
+        <Relationship endClass="Class4" startClass="Class1" type="association"/>
+        <Relationship endClass="Class4" startClass="Class2" type="aggregation"/>
     </Relationships>
 </Diagram>

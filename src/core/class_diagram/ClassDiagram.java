@@ -49,13 +49,26 @@ public class ClassDiagram implements Serializable {
     }
     public void removeRelationship(String startClass, String endClass, String type) {
         for (Relationship r : relationships) {
-            if (r.startClass.equals(startClass) && r.endClass.equals(endClass) && r.type.equals(type)) {
+            if (r.getStartClass().equals(startClass) && r.getEndClass().equals(endClass) && r.getType().equals(type)) {
                 relationships.remove(r);
                 break;
             }
         }
     }
 
+    public void removeRelations_of_a_Diagram(String className) {
+        relationships.removeIf(r -> r.getStartClass().equals(className) || r.getEndClass().equals(className));
+    }
+
+    public ArrayList<Relationship> getRelations_of_a_Diagram(String className) {
+        ArrayList<Relationship> list = new ArrayList<>();
+        for (Relationship r : relationships) {
+            if (r.getStartClass().equals(className) || r.getEndClass().equals(className)) {
+                list.add(r);
+            }
+        }
+        return list;
+    }
     public ClassPanel getClass(String className) {
         for (ClassPanel c : classes) {
             if (c.ClassName.equals(className)) {

@@ -21,6 +21,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -285,7 +286,13 @@ public class ClassDiagramCanvasPanel extends Pane {
         deleteItem.setOnAction(event -> {
             // Remove the visual representation of the relationship
             getChildren().remove(relationshipLine);
-
+            getChildren().removeIf(node -> {
+                if (node instanceof Polygon) {
+                    Polygon polygon = (Polygon) node;
+                    return polygon.layoutXProperty().isBound() && polygon.layoutXProperty().get() == relationshipLine.startXProperty().get();
+                }
+                return false;
+            });
             // Remove the relationship from the list based on its type
             relationships.removeIf(rel ->
                     rel.getStartClass().equals(startClassName) &&
@@ -333,6 +340,8 @@ public class ClassDiagramCanvasPanel extends Pane {
         hitBox.setWidth(bounds.getWidth() + 2 * buffer);
         hitBox.setHeight(bounds.getHeight() + 2 * buffer);
     }
+
+
 
 
     public void setRelationship(String relationshipType, String startingClass, String endingClass) {

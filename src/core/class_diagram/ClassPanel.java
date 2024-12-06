@@ -1,15 +1,19 @@
 package core.class_diagram;
 
+
 import javafx.geometry.Pos;
+
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+
 import ui.MainFrame;
 
 import java.util.ArrayList;
+
 
 public class ClassPanel extends VBox {
     public String ClassName;
@@ -182,13 +186,17 @@ public class ClassPanel extends VBox {
                     grandParent.getChildren().remove(stackPane);
                 }
                 MainFrame.getClassDiagramCanvasPanel().getDiagram().removeClass(ClassName);
+                MainFrame.getClassDiagramCanvasPanel().getDiagram().removeRelations_of_a_Diagram(ClassName);
+
             });
 
             contextMenu.getItems().addAll(addMethod, delete);
             contextMenu.show(this, e.getScreenX(), e.getScreenY());
             e.consume();
         }
+
     }
+
 
     private void updateAttributes() {
         StringBuilder attributesText = new StringBuilder();
