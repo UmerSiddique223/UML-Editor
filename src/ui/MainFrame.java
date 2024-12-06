@@ -295,7 +295,8 @@ public class MainFrame extends Application {
 
     public static void loadDiagram(File file) throws Exception {
         classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
-
+        classDiagramCanvasPanel.setStyle("-fx-background-color: lightgray;");
+        classDiagramCanvasPanel.setPrefSize(2000, 2000);
         // Parse the XML file
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -382,7 +383,10 @@ public class MainFrame extends Application {
         // Update the UI
         classDiagramToolbar = new ClassDiagramToolbar(classDiagramCanvasPanel);
         rootPane.setLeft(classDiagramToolbar);
-        cardPane.getChildren().setAll(classDiagramCanvasPanel);
+        cardPane.getChildren().setAll(scrollPane);
+
+        ClassDiagramPropertiesBar propertiesBar = new ClassDiagramPropertiesBar(diagramName, classDiagramCanvasPanel);
+        rootPane.setRight(propertiesBar);
 
         for (ClassPanel c : classDiagram.getClasses()) {
             classDiagramCanvasPanel.addClassToCanvas(new ClassPanel(c.getClassName(),c.isInterface(), c.getX(), c.getY(), classDiagramCanvasPanel), c.getX(), c.getY());
