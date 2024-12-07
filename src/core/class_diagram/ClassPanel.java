@@ -198,7 +198,7 @@ public class ClassPanel extends VBox {
     }
 
 
-    private void updateAttributes() {
+    public void updateAttributes() {
         StringBuilder attributesText = new StringBuilder();
         for (Attribute attribute : attributes) {
             String accessSymbol = getAccessSymbol(attribute.access);
@@ -212,7 +212,7 @@ public class ClassPanel extends VBox {
         attributesArea.setText(attributesText.toString());
     }
 
-    private void updateMethods() {
+    public void updateMethods() {
         StringBuilder methodsText = new StringBuilder();
         for (Method method : methods) {
             String accessSymbol = isInterface ? "+" : getAccessSymbol(method.access);
