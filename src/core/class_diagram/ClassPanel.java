@@ -25,9 +25,9 @@ public class ClassPanel extends VBox {
     public double y; // Y-coordinate on the canvas
 
     private Label typeLabel; // <<interface>> or empty for classes
-    private TextField titleField;
-    private final TextArea attributesArea;
-    private final TextArea methodsArea;
+    public TextField titleField;
+    public final TextArea attributesArea;
+    public final TextArea methodsArea;
     public void setPosition(double x, double y) {
         this.x = x;
         this.y = y;

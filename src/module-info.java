@@ -8,5 +8,11 @@ module UML.Editor {
     requires javafx.fxml;
     requires java.desktop;
     requires java.sql;
-    opens UMLMain;
+    requires org.junit.jupiter.api;
+    requires org.junit.platform.commons;
+//    opens UMLMain;
+
+    exports UMLMain;
+    opens UMLMain to org.junit.platform.commons;
+//    opens tests to org.junit.platform.commons;
 }

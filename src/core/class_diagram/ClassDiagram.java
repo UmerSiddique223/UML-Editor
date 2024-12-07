@@ -50,6 +50,7 @@ public class ClassDiagram implements Serializable {
     public void removeRelationship(String startClass, String endClass, String type) {
         for (Relationship r : relationships) {
             if (r.getStartClass().equals(startClass) && r.getEndClass().equals(endClass) && r.getType().equals(type)) {
+                r.deleteRelationship();
                 relationships.remove(r);
                 break;
             }
@@ -57,7 +58,13 @@ public class ClassDiagram implements Serializable {
     }
 
     public void removeRelations_of_a_Diagram(String className) {
-        relationships.removeIf(r -> r.getStartClass().equals(className) || r.getEndClass().equals(className));
+        for (Relationship r : relationships) {
+            if (r.getStartClass().equals(className) || r.getEndClass().equals(className)) {
+                r.deleteRelationship();
+                relationships.remove(r);
+            }
+        }
+//        relationships.removeIf(r -> r.getStartClass().equals(className) || r.getEndClass().equals(className));
     }
 
     public ArrayList<Relationship> getRelations_of_a_Diagram(String className) {

@@ -1,9 +1,9 @@
 package core.class_diagram;
 
 public class Attribute {
-    String name;
-    String type;
-    String access;
+    public String name;
+    public String type;
+    public String access;
 
     public Attribute(String name, String type, String access) {
         this.name = name;

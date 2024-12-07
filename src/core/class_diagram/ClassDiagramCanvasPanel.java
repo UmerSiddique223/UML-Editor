@@ -433,14 +433,13 @@ public class ClassDiagramCanvasPanel extends Pane {
             relationshipLine.endXProperty().bind(calculateBorderX(endParent, startParent));
             relationshipLine.endYProperty().bind(calculateBorderY(endParent, startParent));
 
-
-
             getChildren().add(relationshipLine);
-            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "association"));
-            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
+            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "association", relationshipLine, null));
+            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType, relationshipLine, null));
             createDeleteContextMenu(relationshipLine, startClass.ClassName, endClass.ClassName, "association");
             System.out.println("Association relationship added between " + startClass.ClassName + " and " + endClass.ClassName + ".");
-        } else if (relationshipType.equals("composition")) {
+        }
+        else if (relationshipType.equals("composition")) {
             // Get parent StackPanes
             StackPane wholeParent = (StackPane) startClass.getParent();
             StackPane partParent = (StackPane) endClass.getParent();
@@ -473,12 +472,13 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line and diamond to the canvas
             getChildren().addAll(compositionLine, diamond);
-            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "composition"));
-            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
+            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "composition", compositionLine, diamond));
+            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType, compositionLine, diamond));
             createDeleteContextMenu(compositionLine, startClass.ClassName, endClass.ClassName, "composition");
 
             System.out.println("Composition relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
-        } else if (relationshipType.equals("aggregation")) {
+        }
+        else if (relationshipType.equals("aggregation")) {
             // Get parent StackPanes
             StackPane wholeParent = (StackPane) startClass.getParent();
             StackPane partParent = (StackPane) endClass.getParent();
@@ -512,8 +512,8 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line and hollow diamond to the canvas
             getChildren().addAll(aggregationLine, hollowDiamond);
-            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "aggregation"));
-            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
+            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "aggregation", aggregationLine, hollowDiamond));
+            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType, aggregationLine, hollowDiamond));
             createDeleteContextMenu(aggregationLine, startClass.ClassName, endClass.ClassName, "aggregation");
             System.out.println("Aggregation relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
         } else if (relationshipType == "inheritance") {
@@ -554,8 +554,8 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line and triangle to the canvas
             getChildren().addAll(inheritanceLine, triangle);
-            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "inheritance"));
-            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType));
+            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "inheritance", inheritanceLine, triangle));
+            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType, inheritanceLine, triangle));
             createDeleteContextMenu(inheritanceLine, startClass.ClassName, endClass.ClassName, "inheritance");
             System.out.println("Inheritance relationship added between " + startClass.ClassName + " (superclass) and " + endClass.ClassName + " (subclass).");
         }
