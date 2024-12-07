@@ -9,7 +9,7 @@ public class UseCaseDiagramPanelTest {
 
     @Before
     public void setup() {
-        panel = new UseCaseDiagramPanel();
+        panel = new UseCaseDiagramPanel("Sample");
     }
 
     @Test

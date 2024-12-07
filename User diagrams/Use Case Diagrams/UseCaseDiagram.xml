@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<UseCaseDiagram>
+    <Components>
+        <Component label="Actor" type="UseCase" x="139.2" y="72.0"/>
+        <Component label="4" type="UseCase" x="398.40000000000003" y="144.0"/>
+        <Component label="Actor" x="163.2" y="203.20000000000002"/>
+    </Components>
+    <Relationships/>
+</UseCaseDiagram>

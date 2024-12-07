@@ -35,11 +35,12 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     public List<DiagramComponent> components = new ArrayList<>();
     public List<Relationship> relationships = new ArrayList<>();
     private Line tempLine;
+    private String name;
     private DiagramComponent startComponent;
     private boolean relationshipCreationMode = false;
     private boolean addActorMode = false;
     private boolean addUseCaseMode = false;
-    private boolean dragMode = false;
+    private static boolean dragMode = false;
 
     private Deque<Command> undoStack = new ArrayDeque<>();
     private Deque<Command> redoStack = new ArrayDeque<>();
@@ -47,8 +48,9 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     // Actor image fallback
     private Image actorImage;
 
-    public UseCaseDiagramPanel() {
+    public UseCaseDiagramPanel(String name) {
         super();
+        this.name=name;
         loadActorImage();
     }
     private RelationshipOptions promptForRelationshipOptions(String title) {
@@ -528,7 +530,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     /**
      * A generic diagram component with dragging support.
      */
-    public class DiagramComponent {
+    public static class DiagramComponent {
         public final Shape shape;
         private final Text text;
         public final StackPane container;
@@ -628,7 +630,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     /**
      * Represents a relationship (line) between two components.
      */
-    public class Relationship {
+    public static class Relationship {
         public final DiagramComponent from;
         public final DiagramComponent to;
         public final Line line;

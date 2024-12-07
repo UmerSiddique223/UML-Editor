@@ -26,7 +26,7 @@ public class MainFrame extends Application {
     private VBox homePanel;
     private static ClassDiagramCanvasPanel classDiagramCanvasPanel;
     private static ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
-    private UseCaseDiagramPanel useCaseDiagramPanel;
+    private static UseCaseDiagramPanel useCaseDiagramPanel;
     private static Pane currentDiagramPanel;
 
     @Override
@@ -153,7 +153,7 @@ public class MainFrame extends Application {
         dialog.setTitle("Add Use Case Diagram");
         dialog.setHeaderText("Enter Use Case Diagram Name:");
         dialog.showAndWait().ifPresent(name -> {
-            useCaseDiagramPanel = new UseCaseDiagramPanel();
+            useCaseDiagramPanel = new UseCaseDiagramPanel(name);
             useCaseDiagramPanel.setStyle("-fx-background-color: lightblue;");
             UsecaseToolbar useCaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
             rootPane.setLeft(useCaseToolbar);
@@ -271,7 +271,26 @@ public class MainFrame extends Application {
 
 
         }
+
+
     }
+
+    static void loadUseCaseDiagram(File file) throws Exception {
+        UseCaseDiagramPanel loadedDiagram = data.DiagramSaver.loadUseCaseDiagram(file);
+
+        if (loadedDiagram != null) {
+            useCaseDiagramPanel = loadedDiagram;
+            useCaseDiagramPanel.setStyle("-fx-background-color: lightblue;");
+            UsecaseToolbar useCaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
+            rootPane.setLeft(useCaseToolbar);
+            cardPane.getChildren().setAll(useCaseDiagramPanel);
+            useCaseToolbar.setVisible(true);
+            currentDiagramPanel = useCaseDiagramPanel;
+        } else {
+            throw new RuntimeException("Failed to load use case diagram.");
+        }
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
