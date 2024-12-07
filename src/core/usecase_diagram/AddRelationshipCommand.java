@@ -15,7 +15,7 @@ public class AddRelationshipCommand implements Command {
     private String relationshipText;
     private boolean isExtend;
     private boolean isInclude;
-    private UseCaseDiagramPanel.Relationship relationship;
+    private UseCaseRelationship relationship;
 
     /**
      * Updated constructor to include isExtend and isInclude parameters.

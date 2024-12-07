@@ -9,7 +9,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -33,7 +32,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     private static final Logger LOGGER = Logger.getLogger(UseCaseDiagramPanel.class.getName());
 
     public List<DiagramComponent> components = new ArrayList<>();
-    public List<Relationship> relationships = new ArrayList<>();
+    public List<UseCaseRelationship> relationships = new ArrayList<>();
     private Line tempLine;
     private String name;
     private DiagramComponent startComponent;
@@ -392,7 +391,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
      * Adds a relationship line between two components.
      * If relationshipText is "<<include>>" or "<<exclude>>", a dotted line with an arrow is drawn.
      */
-    public Relationship addRelationship(DiagramComponent from, DiagramComponent to, String relationshipText, boolean isExtend, boolean isInclude) {
+    public UseCaseRelationship addRelationship(DiagramComponent from, DiagramComponent to, String relationshipText, boolean isExtend, boolean isInclude) {
         Line relationshipLine = new Line();
         relationshipLine.setStroke(Color.BLACK);
         relationshipLine.setStrokeWidth(2);
@@ -442,13 +441,13 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
             updateArrow(relationshipLine, arrowHead, false);
         }
 
-        Relationship relationship = new Relationship(from, to, relationshipLine, label);
+        UseCaseRelationship relationship = new UseCaseRelationship(from, to, relationshipLine, label);
         relationships.add(relationship);
 
         return relationship;
     }
 
-    public void removeRelationship(Relationship relationship) {
+    public void removeRelationship(UseCaseRelationship relationship) {
         relationships.remove(relationship);
         getChildren().remove(relationship.line);
         if (relationship.label != null) {
@@ -630,19 +629,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     /**
      * Represents a relationship (line) between two components.
      */
-    public static class Relationship {
-        public final DiagramComponent from;
-        public final DiagramComponent to;
-        public final Line line;
-        public final Text label;
 
-        public Relationship(DiagramComponent from, DiagramComponent to, Line line, Text label) {
-            this.from = from;
-            this.to = to;
-            this.line = line;
-            this.label = label;
-        }
-    }
 
 
 }

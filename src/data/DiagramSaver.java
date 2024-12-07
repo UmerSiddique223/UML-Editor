@@ -6,6 +6,7 @@ import core.class_diagram.ClassPanel;
 import core.class_diagram.Method;
 import core.class_diagram.Relationship;
 import core.usecase_diagram.UseCaseDiagramPanel;
+import core.usecase_diagram.UseCaseRelationship;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Line;
@@ -19,7 +20,6 @@ import javafx.scene.text.Text;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DiagramSaver {
@@ -163,7 +163,7 @@ public class DiagramSaver {
 
         // Save relationships
         Element relationshipsElement = document.createElement("Relationships");
-        for (UseCaseDiagramPanel.Relationship relationship : diagram.relationships) {
+        for (UseCaseRelationship relationship : diagram.relationships) {
             Element relationshipElement = document.createElement("Relationship");
             relationshipElement.setAttribute("from", relationship.from.getText());
             relationshipElement.setAttribute("to", relationship.to.getText());
@@ -226,7 +226,7 @@ public class DiagramSaver {
             if (from != null && to != null) {
                 Line line = new Line();
                 Text labelText = new Text(label);
-                diagram.relationships.add(new UseCaseDiagramPanel.Relationship(from, to, line, labelText));
+                diagram.relationships.add(new UseCaseRelationship(from, to, line, labelText));
             }
         }
 
