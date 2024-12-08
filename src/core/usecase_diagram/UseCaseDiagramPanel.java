@@ -35,7 +35,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     /**
      * Enum to represent the various interaction modes of the panel.
      */
-    enum Mode {
+    public enum Mode {
         DEFAULT,
         ADD_ACTOR,
         ADD_USE_CASE,
@@ -55,18 +55,18 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     private DiagramComponent startComponent;
 
     // Interaction modes
-    boolean relationshipCreationMode = false;
-    boolean addActorMode = false;
-    boolean addUseCaseMode = false;
-    static boolean dragMode = false;
+    public boolean relationshipCreationMode = false;
+    public boolean addActorMode = false;
+    public boolean addUseCaseMode = false;
+    public static boolean dragMode = false;
     private boolean editTextMode = false;
-    boolean deleteMode = false;
+    public boolean deleteMode = false;
 
     // Image for representing actors
     Image actorImage;
 
     // Current interaction mode
-    Mode currentMode = Mode.DEFAULT;
+    public Mode currentMode = Mode.DEFAULT;
 
     // Undo/redo stacks for command-based actions
     private final Deque<Command> undoStack = new ArrayDeque<>();
