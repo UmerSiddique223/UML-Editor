@@ -6,6 +6,9 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 
+/**
+ * A pane representing the shape of the Actor in Use Case Diagram.
+ */
 public class ActorShape extends Pane {
     public ActorShape(String name) {
         // Create head (circle)

@@ -42,19 +42,29 @@ public class ClassPanel extends VBox {
     /** The X-coordinate of the panel on the canvas. */
     public double x;
 
-    /** The Y-coordinate of the panel on the canvas. */
+    /**
+     * The Y-coordinate of the panel on the canvas.
+     */
     public double y;
 
-    /** Label to indicate the type (class or interface). */
+    /**
+     * Label to indicate the type (class or interface).
+     */
     private Label typeLabel;
 
-    /** Editable text field for the class name. */
+    /**
+     * Editable text field for the class name.
+     */
     public TextField titleField;
 
-    /** Text area to display attributes. */
+    /**
+     * Text area to display attributes.
+     */
     public final TextArea attributesArea;
 
-    /** Text area to display methods. */
+    /**
+     * Text area to display methods.
+     */
     public final TextArea methodsArea;
 
     /**
@@ -91,7 +101,7 @@ public class ClassPanel extends VBox {
         titleField.focusedProperty().addListener((observable, oldFocus, newFocus) -> {
             if (!newFocus) { // Lost focus
                 titleField.setText(ClassName);
-                }
+            }
         });
 
         // Update ClassName when text is changed
@@ -145,13 +155,10 @@ public class ClassPanel extends VBox {
         getChildren().add(methodsArea); // Both have methods
 
         setAlignment(Pos.CENTER);
-        if (MainFrame.getClassDiagramCanvasPanel().getDrawingMode()==""){
-
+        if (ParentCanvas.getDrawingMode() == "") {
             setOnMouseClicked(this::handleContextMenu);
-
-
         }
-
+    }
     /**
      * Sets the position of the panel on the canvas.
      *
@@ -162,7 +169,7 @@ public class ClassPanel extends VBox {
         this.x = x;
         this.y = y;
     }
-}
+
     /**
      * Gets the list of attributes.
      *
@@ -268,7 +275,8 @@ public class ClassPanel extends VBox {
 
                             // Parse shorthand access modifiers
                             String accessSymbol = parts[0];
-                            String access = parseAccessLevel(accessSymbol);
+//                            String access = parseAccessLevel(accessSymbol);
+                            String access = "public";
 
                             String type = parts[1];
                             String name = parts[2];
@@ -363,7 +371,8 @@ public class ClassPanel extends VBox {
         String name = matcher.group(3);
         String paramsStr = matcher.group(4);
 
-        String access = parseAccessLevel(accessSymbol);
+//        String access = parseAccessLevel(accessSymbol);
+        String access = "public";
 
         // Parse parameters
         ArrayList<String> parameters = new ArrayList<>();

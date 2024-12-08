@@ -13,8 +13,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Utility class for exporting a JavaFX canvas or node as an image file.
+ */
 public class CanvasExporterBean {
 
+    /**
+     * Exports the provided JavaFX {@code Node} to an image file.
+     *
+     * @param canvas the JavaFX node to export, typically a canvas or pane
+     * @param format the image format to export as (e.g., "png", "jpg")
+     */
     public static void exportToImage(Node canvas, String format) {
         // Capture the canvas as an image
         WritableImage snapshot = canvas.snapshot(new SnapshotParameters(), null);
@@ -39,7 +48,12 @@ public class CanvasExporterBean {
         }
     }
 
-
+    /**
+     * Exports the provided Class diagram to its Code.
+     *
+     * @param diagram the diagram from which to Generate Code
+     * @param outputDirectory the Directory where the results should be stored
+     */
     public static void exportToJavaCode(ClassDiagram diagram, String outputDirectory) throws Exception {
         // Create the output directory if it doesn't exist
         File folder = new File(outputDirectory);

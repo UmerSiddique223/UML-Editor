@@ -4,6 +4,9 @@ import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 
+/**
+ * A class representing a Relationship between entities in a Use Case Diagram
+ */
 public class UseCaseRelationship {
     public final UseCaseDiagramPanel.DiagramComponent from;
     public final UseCaseDiagramPanel.DiagramComponent to;

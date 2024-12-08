@@ -28,7 +28,11 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-// Canvas for Class Diagrams
+/**
+ * Represents a visual Canvas on which Class Diagram is drawn.
+ * Allow placing Class Panels, interfaces, and relationships on it.
+ * Starting point of every Class Diagram project.
+ */
 public class ClassDiagramCanvasPanel extends Pane {
 
     ClassDiagram diagram;
@@ -38,6 +42,9 @@ public class ClassDiagramCanvasPanel extends Pane {
     private ClassPanel startClass = null; // To store the class where the drag started
     private ArrayList<Relationship> relationships = new ArrayList<>(); // Store relationships
 
+    /**
+     * Constructs a new {@code ClassDiagramCanvasPanel}.
+     */
     public ClassDiagramCanvasPanel() {
         setStyle("-fx-background-color: white;");
         setPrefSize(800, 600);
@@ -56,7 +63,9 @@ public class ClassDiagramCanvasPanel extends Pane {
         return (ClassPanel) getScene().lookup(".drag-source"); // Example mechanism
     }
 
-
+    /**
+     * Sets the current diagram of the Canvas (project).
+     */
     public void setCurrentDiagram(ClassDiagram diagram) {
         this.diagram = diagram;
     }
@@ -98,7 +107,11 @@ public class ClassDiagramCanvasPanel extends Pane {
         });
     }
 
-
+    /**
+     * Sets the drawing mode of the Canvas.
+     *
+     * @param mode          the mode to set
+     */
     public void setDrawingMode(String mode) {
         this.drawingMode = mode;
         System.out.println("Drawing mode set to: " + mode);
@@ -110,6 +123,10 @@ public class ClassDiagramCanvasPanel extends Pane {
             setCursor(Cursor.DEFAULT);
         }
     }
+
+    /**
+     * Saves the diagram in its project file.
+     */
     public void saveDiagram() throws Exception {
         System.out.println(diagram.Name + "  Name");
         System.out.println(diagram + "    hnjnjkdssd");
@@ -141,6 +158,14 @@ public class ClassDiagramCanvasPanel extends Pane {
     public void setOnClassRename(BiConsumer<ClassPanel, String> listener) {
         onClassRename = listener;
     }
+
+    /**
+     * Adds {@code ClassPanel} to the Canvas at the specified positions.
+     *
+     * @param classPanel        the classpanel to add.
+     * @param x                 the x coordinate of placement.
+     * @param y                 the y coordinate of placement.
+     */
     public void addClassToCanvas(ClassPanel classPanel, double x, double y) {
         javafx.scene.shape.Rectangle border = new Rectangle(200, 150);
         border.setFill(Color.TRANSPARENT);
@@ -166,6 +191,9 @@ public class ClassDiagramCanvasPanel extends Pane {
     }
 
 
+    /**
+     * Gets the drawing mode.
+     */
     public  String getDrawingMode() {
         return drawingMode;
     }
@@ -241,7 +269,11 @@ public class ClassDiagramCanvasPanel extends Pane {
     // Set the relationship (This method is passed from the outside)
 
 
-
+    /**
+     * Allows the placement of Classes in the Canvas.
+     *
+     * @param isInterface               A boolean variable to check whether to add a Class or an Interface
+     */
     public void enableClassPlacementMode(boolean isInterface) {
         // Change the cursor to a plus icon
         setCursor(Cursor.CROSSHAIR); // or use a custom cursor if preferred
@@ -264,7 +296,9 @@ public class ClassDiagramCanvasPanel extends Pane {
     private double dragStartX;
     private double dragStartY;
 
-
+    /**
+     * Handles the dragging.
+     */
     public void handleClassDragEnd(StackPane container) {
         // After the mouse is released, check for overlaps and adjust position
         for (javafx.scene.Node node : getChildren()) {
@@ -295,6 +329,9 @@ public class ClassDiagramCanvasPanel extends Pane {
         }
     }
 
+    /**
+     * Updates position of a ClassPanel in the Canvas.
+     */
     public void updatePosition(String className, double x, double y) {
         System.out.println("Updating position of " + className + " to (" + x + ", " + y + ")");
         if (diagram.getClass(className) != null) {
@@ -391,9 +428,13 @@ public class ClassDiagramCanvasPanel extends Pane {
         hitBox.setHeight(bounds.getHeight() + 2 * buffer);
     }
 
-
-
-
+    /**
+     * Sets relationship between 2 classes.
+     *
+     * @param relationshipType          the type of relationship (e.g. Composition)
+     * @param startingClass             the first class of the Relationship
+     * @param endingClass               the second class of the Relationship
+     */
     public void setRelationship(String relationshipType, String startingClass, String endingClass) {
         if (diagram == null || diagram.classes == null || diagram.classes.isEmpty()) {
             System.out.println("No classes available to create a relationship.");

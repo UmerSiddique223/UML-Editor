@@ -4,9 +4,21 @@ import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 
+/**
+ * A toolbar for managing tools related to Use Case diagrams.
+ * It includes buttons for adding actors, use cases, editing and deleting them.
+ */
 public class UsecaseToolbar extends VBox {
     private UseCaseDiagramPanel useCaseDiagramPanel;
 
+    /**
+     * Constructs a UsecaseToolbar with the specified panel.
+     * The toolbar is populated with buttons for adding Actors, Use Cases,
+     * and various relationships in the use case diagram.
+     *
+     * @param useCaseDiagramPanel the panel (a use case diagram)
+     * associated with the toolbar.
+     */
     public UsecaseToolbar(UseCaseDiagramPanel useCaseDiagramPanel) {
         this.useCaseDiagramPanel = useCaseDiagramPanel;
 
