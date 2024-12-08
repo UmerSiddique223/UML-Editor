@@ -51,6 +51,11 @@ public class ClassDiagramCanvasPanel extends Pane {
     public ClassDiagram getDiagram() {
         return diagram;
     }
+    private ClassPanel getSourceClassPanel() {
+        // Logic to determine the source class panel from drag context.
+        return (ClassPanel) getScene().lookup(".drag-source"); // Example mechanism
+    }
+
 
     public void setCurrentDiagram(ClassDiagram diagram) {
         this.diagram = diagram;

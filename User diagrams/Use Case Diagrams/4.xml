@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<UseCaseDiagram>
+    <Name>4</Name>
+    <Components>
+        <Component label="Actor" x="112.00000000000009" y="121.59999999999997"/>
+        <Component label="4" type="UseCase" x="232.8" y="148.0"/>
+    </Components>
+    <Relationships>
+        <Relationship from="Actor" label="1" to="4"/>
+    </Relationships>
+</UseCaseDiagram>

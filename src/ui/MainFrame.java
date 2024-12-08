@@ -16,6 +16,7 @@ import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
 
+import core.usecase_diagram.UseCaseDiagramPanel;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,8 +28,9 @@ public class MainFrame extends Application {
     private static StackPane cardPane; // For switching between views
     private VBox homePanel;
     private static ClassDiagramCanvasPanel classDiagramCanvasPanel;
-    private UsecaseToolbar usecaseToolbar; // Left-side toolbar
     private static ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
+    private static UseCaseDiagramPanel useCaseDiagramPanel;
+    private static Pane currentDiagramPanel;
 
     @Override
     public void start(Stage primaryStage) {
@@ -261,6 +263,7 @@ public class MainFrame extends Application {
 
     }
 
+    }
 
     private void showUseCaseDiagram(String name) {
 
@@ -274,8 +277,23 @@ public class MainFrame extends Application {
         usecaseToolbar.setVisible(true);
 
         cardPane.getChildren().setAll(useCaseDiagramPanel);
+        dialog.showAndWait().ifPresent(name -> {
+            useCaseDiagramPanel = new UseCaseDiagramPanel(name);
+            useCaseDiagramPanel.setStyle("-fx-background-color: lightblue;");
+            UsecaseToolbar useCaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
+            rootPane.setLeft(useCaseToolbar);
+            cardPane.getChildren().setAll(useCaseDiagramPanel);
+            useCaseToolbar.setVisible(true);
+            currentDiagramPanel = useCaseDiagramPanel;
 
+        });
     }
+
+
+    public static Pane getCurrentDiagramPanel() {
+        return currentDiagramPanel;
+    }
+
 
     public static ClassDiagramCanvasPanel getClassDiagramCanvasPanel() {
         return classDiagramCanvasPanel;
@@ -398,5 +416,27 @@ public class MainFrame extends Application {
             }
         });
 
+
+
+    }
+
+    static void loadUseCaseDiagram(File file) throws Exception {
+        UseCaseDiagramPanel loadedDiagram = data.DiagramSaver.loadUseCaseDiagram(file);
+
+        if (loadedDiagram != null) {
+            useCaseDiagramPanel = loadedDiagram;
+            useCaseDiagramPanel.setStyle("-fx-background-color: lightblue;");
+            UsecaseToolbar useCaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
+            rootPane.setLeft(useCaseToolbar);
+            cardPane.getChildren().setAll(useCaseDiagramPanel);
+            useCaseToolbar.setVisible(true);
+            currentDiagramPanel = useCaseDiagramPanel;
+        } else {
+            throw new RuntimeException("Failed to load use case diagram.");
+        }
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }
