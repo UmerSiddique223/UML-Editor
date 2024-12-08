@@ -24,6 +24,12 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 
+/**
+ * MainFrame is the main entry point of the UML Editor application,
+ * extending the JavaFX Application class to manage the primary user interface.
+ * This class provides functionality for initializing and managing the
+ * layout, tools, and actions for both Class Diagram and Use Case Diagram views.
+ */
 public class MainFrame extends Application {
 
     private static BorderPane rootPane; // Main container
@@ -33,6 +39,11 @@ public class MainFrame extends Application {
     private UsecaseToolbar usecaseToolbar; // Left-side toolbar
     private static ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
 
+    /**
+     * Initializes the main stage and sets up the initial UI components.
+     *
+     * @param primaryStage the primary stage for the JavaFX application
+     */
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("UML Editor");
@@ -44,6 +55,11 @@ public class MainFrame extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Initializes the core components of the application layout.
+     *
+     * @param stage the primary stage of the application
+     */
     private void initializeComponents(Stage stage) {
         rootPane = new BorderPane();
 
@@ -59,6 +75,9 @@ public class MainFrame extends Application {
         rootPane.setCenter(cardPane);
     }
 
+    /**
+     * Initializes the home panel with options to create or load diagrams.
+     */
     private void initializeHomePanel() {
         homePanel = new VBox(20);
         homePanel.setAlignment(Pos.CENTER);
@@ -94,6 +113,11 @@ public class MainFrame extends Application {
     }
 
 
+    /**
+     * Updates the home panel content based on the selected diagram type.
+     *
+     * @param diagramType the type of diagram (Class or Use Case)
+     */
     private void updateHomePanel(String diagramType) {
         homePanel.getChildren().removeIf(node -> node instanceof VBox || node instanceof Label);
 
@@ -230,7 +254,11 @@ public class MainFrame extends Application {
         ));
     }
 
-    // Function to initiate class diagram canvas
+    /**
+     * Shows the Class Diagram with the specified name.
+     *
+     * @param name the name of the class diagram project
+     */
     private void showClassDiagram(String name) {
         // Main canvas panel for Class Diagram:
         classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
@@ -265,7 +293,11 @@ public class MainFrame extends Application {
 
     }
 
-
+    /**
+     * Shows the Use Case Diagram with the specified name.
+     *
+     * @param name the name of the use case diagram project
+     */
     private void showUseCaseDiagram(String name) {
 
         TextInputDialog dialog = new TextInputDialog();
@@ -286,13 +318,23 @@ public class MainFrame extends Application {
     }
 
 
+    /**
+     * Displays an alert with the specified message.
+     *
+     * @param message the message to display in the alert
+     */
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText(message);
         alert.showAndWait();
     }
 
-
+    /**
+     * Loads a diagram from the given file and initializes the canvas with the loaded diagram.
+     *
+     * @param file the file to load the diagram from
+     * @throws Exception if an error occurs during file parsing or diagram loading
+     */
     public static void loadDiagram(File file) throws Exception {
         classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
         classDiagramCanvasPanel.setStyle("-fx-background-color: lightgray;");

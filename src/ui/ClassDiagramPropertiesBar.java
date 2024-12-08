@@ -6,11 +6,27 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import core.class_diagram.CanvasExporter;
 
+
+/**
+ * A UI component that displays the properties bar for a class diagram.
+ * It includes sections for the project name, list of classes in the diagram,
+ * and options to export or save the diagram.
+ */
 public class ClassDiagramPropertiesBar extends VBox {
 
+    /** The ListView displaying the names of classes in the diagram. */
     private final ListView<String> classListView;
+
+    /** The label displaying the project name. */
     private final Label projectNameLabel;
 
+    /**
+     * Constructs a ClassDiagramPropertiesBar with the specified project name
+     * and class diagram canvas panel.
+     *
+     * @param projectName the name of the project to display in the properties bar.
+     * @param classDiagramCanvasPanel the class diagram canvas panel containing the diagram data.
+     */
     public ClassDiagramPropertiesBar(String projectName, ClassDiagramCanvasPanel classDiagramCanvasPanel) {
         setSpacing(10);
         setStyle("-fx-background-color: #e8e8e8; -fx-padding: 10px;");
@@ -72,7 +88,11 @@ public class ClassDiagramPropertiesBar extends VBox {
         getChildren().add(exportTiltedPane);
     }
 
-    // Update the project name dynamically if needed
+    /**
+     * Updates the project name dynamically in the properties bar.
+     *
+     * @param newProjectName the new project name to display.
+     */
     public void updateProjectName(String newProjectName) {
         projectNameLabel.setText("Project: " + newProjectName);
     }

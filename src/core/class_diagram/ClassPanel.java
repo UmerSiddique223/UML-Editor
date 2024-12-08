@@ -14,29 +14,53 @@ import ui.MainFrame;
 
 import java.util.ArrayList;
 
-
+/**
+ * Represents a visual panel for a class or interface in a class diagram.
+ * Allows for displaying and editing attributes, methods, and other properties.
+ */
 public class ClassPanel extends VBox {
+    /** The name of the class or interface. */
     public String ClassName;
+
+    /** The parent canvas on which this class panel resides. */
     public ClassDiagramCanvasPanel ParentCanvas;
+
+    /** The list of attributes for the class. */
     private final ArrayList<Attribute> attributes = new ArrayList<>();
+
+    /** The list of methods for the class. */
     private final ArrayList<Method> methods = new ArrayList<>();
+
+    /** Whether this panel represents an interface. */
     private final boolean isInterface;
-    public double x; // X-coordinate on the canvas
-    public double y; // Y-coordinate on the canvas
 
-    private Label typeLabel; // <<interface>> or empty for classes
+    /** The X-coordinate of the panel on the canvas. */
+    public double x;
+
+    /** The Y-coordinate of the panel on the canvas. */
+    public double y;
+
+    /** Label to indicate the type (class or interface). */
+    private Label typeLabel;
+
+    /** Editable text field for the class name. */
     public TextField titleField;
+
+    /** Text area to display attributes. */
     public final TextArea attributesArea;
+
+    /** Text area to display methods. */
     public final TextArea methodsArea;
-    public void setPosition(double x, double y) {
-        this.x = x;
-        this.y = y;
-    }
 
-    public ArrayList<Attribute> getAttributes() {
-        return attributes;
-    }
-
+    /**
+     * Constructs a new {@code ClassPanel} with the specified properties.
+     *
+     * @param name        the name of the class or interface
+     * @param isInterface whether this represents an interface
+     * @param x           the initial X-coordinate on the canvas
+     * @param y           the initial Y-coordinate on the canvas
+     * @param canvas      the parent canvas to which this panel belongs
+     */
     public ClassPanel(String name, boolean isInterface, double x, double y, ClassDiagramCanvasPanel canvas) {
         this.ClassName = name;
         this.isInterface = isInterface;
@@ -65,7 +89,7 @@ public class ClassPanel extends VBox {
             if (!newValue.trim().isEmpty()) {
                 String previousName = ClassName; // Store the old name
                 ClassName = newValue.trim();
-                
+
                 canvas.onClassRename.accept(this, previousName); // Pass both the class and old name
             }
         });
@@ -95,6 +119,27 @@ public class ClassPanel extends VBox {
         setOnMouseClicked(this::handleContextMenu);
     }
 
+    /**
+     * Sets the position of the panel on the canvas.
+     *
+     * @param x the X-coordinate
+     * @param y the Y-coordinate
+     */
+    public void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    /**
+     * Gets the list of attributes.
+     *
+     * @return the list of attributes
+     */
+    public ArrayList<Attribute> getAttributes() {
+        return attributes;
+    }
+
+
     private void propagateEvents(Control control) {
         control.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
             event.consume();
@@ -102,21 +147,42 @@ public class ClassPanel extends VBox {
         });
     }
 
+    /**
+     * Gets the X-coordinate of the panel.
+     *
+     * @return the X-coordinate
+     */
     public double getX() {
         return x;
     }
 
-    public double getY() {
-        return y;
-    }
-
+    /**
+     * Sets the X-coordinate of the panel.
+     *
+     * @param x the X-coordinate
+     */
     public void setX(double x) {
         this.x = x;
     }
 
+    /**
+     * Gets the Y-coordinate of the panel.
+     *
+     * @return the Y-coordinate
+     */
+    public double getY() {
+        return y;
+    }
+
+    /**
+     * Sets the Y-coordinate of the panel.
+     *
+     * @param y the Y-coordinate
+     */
     public void setY(double y) {
         this.y = y;
     }
+
     private void handleContextMenu(MouseEvent e) {
         if (e.getButton() == MouseButton.SECONDARY) {
             ContextMenu contextMenu = new ContextMenu();
@@ -197,7 +263,9 @@ public class ClassPanel extends VBox {
 
     }
 
-
+    /**
+     * Updates the displayed attributes on the panel.
+     */
     public void updateAttributes() {
         StringBuilder attributesText = new StringBuilder();
         for (Attribute attribute : attributes) {
@@ -212,6 +280,9 @@ public class ClassPanel extends VBox {
         attributesArea.setText(attributesText.toString());
     }
 
+    /**
+     * Updates the displayed methods on the panel.
+     */
     public void updateMethods() {
         StringBuilder methodsText = new StringBuilder();
         for (Method method : methods) {
@@ -230,6 +301,9 @@ public class ClassPanel extends VBox {
         methodsArea.setText(methodsText.toString());
     }
 
+    /**
+     * Gets the relevant Access symbol based on the access type.
+     */
     private String getAccessSymbol(String access) {
         switch (access) {
             case "public":
@@ -243,23 +317,43 @@ public class ClassPanel extends VBox {
         }
     }
 
+    /**
+     * Checks if the panel represents an interface.
+     *
+     * @return {@code true} if it is an interface, otherwise {@code false}
+     */
     public boolean isInterface() {
-        return  isInterface;
+        return isInterface;
     }
 
     public String getClassName() {
         return ClassName;
     }
 
+    /**
+     * Gets the list of methods.
+     *
+     * @return the list of methods
+     */
     public ArrayList<Method> getMethods() {
         return methods;
     }
 
+    /**
+     * Adds an attribute to the class.
+     *
+     * @param attribute the attribute to add
+     */
     public void addAttribute(Attribute attribute) {
         attributes.add(attribute);
 
     }
 
+    /**
+     * Adds a method to the class.
+     *
+     * @param method the method to add
+     */
     public void addMethod(Method method) {
         methods.add(method);
     }

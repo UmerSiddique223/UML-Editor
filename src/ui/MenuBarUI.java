@@ -12,8 +12,17 @@ import javafx.stage.Stage;
 
 import java.io.File;
 
+/**
+ * MenuBarUI is a custom JavaFX MenuBar that provides the main navigation for the UML Editor application.
+ * This class includes menus for managing files, editing diagrams, adjusting view options, and accessing help.
+ */
 public class MenuBarUI extends MenuBar {
 
+    /**
+     * Constructs a MenuBarUI instance with the specified parent stage.
+     *
+     * @param parentStage the parent stage for the menu bar, used to open dialogs and alert boxes
+     */
     public MenuBarUI(Stage parentStage) {
         // File Menu
         Menu fileMenu = new Menu("File");
@@ -74,7 +83,11 @@ public class MenuBarUI extends MenuBar {
         this.getMenus().addAll(fileMenu, editMenu, viewMenu, helpMenu);
     }
 
-
+    /**
+     * Displays a window that allows the user to select and load an existing diagram.
+     *
+     * @param parentStage the parent stage for the load diagram window
+     */
     private void showLoadDiagramWindow(Stage parentStage) {
         Stage loadStage = new Stage();
         loadStage.setTitle("Load Diagram");
@@ -118,6 +131,12 @@ public class MenuBarUI extends MenuBar {
         loadStage.show();
     }
 
+    /**
+     * Displays an error dialog with the specified title and message.
+     *
+     * @param title the title of the error dialog
+     * @param message the error message to display
+     */
     private void showErrorDialog(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -125,7 +144,11 @@ public class MenuBarUI extends MenuBar {
         alert.showAndWait();
     }
 
-
+    /**
+     * Populates the file list with XML files from the "User diagrams" folder.
+     *
+     * @param fileList the ListView to populate with file names
+     */
     private void populateFileList(ListView<String> fileList) {
         File folder = new File("User diagrams");
         if (folder.exists() && folder.isDirectory()) {

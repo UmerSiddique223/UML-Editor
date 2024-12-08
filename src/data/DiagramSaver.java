@@ -13,8 +13,21 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.util.ArrayList;
 
+/**
+ * A utility class that handles the saving of a UML class diagram into an XML file.
+ * The diagram is serialized, including its name, classes, attributes, methods, and relationships.
+ */
 public class DiagramSaver {
 
+    /**
+     * Saves the specified ClassDiagram to an XML file.
+     * The file is stored in the "User diagrams" folder with the name of the diagram as the file name.
+     * The XML structure includes diagram metadata, classes with their attributes and methods,
+     * and relationships between classes.
+     *
+     * @param diagram the ClassDiagram object to save.
+     * @throws Exception if any error occurs while creating the XML file or writing the content.
+     */
     public static void saveDiagram(ClassDiagram diagram) throws Exception {
         // Define the directory and file path
         String folderPath = "User diagrams";

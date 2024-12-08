@@ -54,6 +54,7 @@ public class ClassDiagramCanvasPanel extends Pane {
         ClassPanel newClass = new ClassPanel(newName, isInterface, x, y, this);
         addClassToCanvas(newClass, x, y);
     }
+    
 
     private void showContextMenu(double screenX, double screenY, double x, double y) {
         ContextMenu contextMenu = new ContextMenu();
@@ -92,7 +93,7 @@ public class ClassDiagramCanvasPanel extends Pane {
         System.out.println(diagram + "    hnjnjkdssd");
         if (diagram == null) {
             System.out.println("No diagram to save.");
-            return;
+            throw new Exception("No diagram to save.");
         }
 
         DiagramSaver.saveDiagram(diagram);
@@ -165,7 +166,7 @@ public class ClassDiagramCanvasPanel extends Pane {
     private double dragStartY;
 
 
-    private void handleClassDragEnd(StackPane container) {
+    public void handleClassDragEnd(StackPane container) {
         // After the mouse is released, check for overlaps and adjust position
         for (javafx.scene.Node node : getChildren()) {
             if (node instanceof StackPane && node != container) {
@@ -345,7 +346,7 @@ public class ClassDiagramCanvasPanel extends Pane {
 
 
     public void setRelationship(String relationshipType, String startingClass, String endingClass) {
-        if (diagram == null || diagram.classes.isEmpty()) {
+        if (diagram == null || diagram.classes == null || diagram.classes.isEmpty()) {
             System.out.println("No classes available to create a relationship.");
             return;
         }

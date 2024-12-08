@@ -28,10 +28,8 @@ class ClassPanelTest {
 
     @BeforeEach
     void setUp() {
-        // Mock canvas panel
         mockCanvas = new ClassDiagramCanvasPanel();
 
-        // Create a ClassPanel instance for testing
         classPanel = new ClassPanel("TestClass", false, 100, 200, mockCanvas);
     }
 
@@ -77,7 +75,7 @@ class ClassPanelTest {
         classPanel.addAttribute(attribute1);
         classPanel.addAttribute(attribute2);
 
-        // Verify that the attributes are reflected correctly
+        // Checking that the attributes are reflected correctly
         classPanel.updateAttributes();
         String attributesText = classPanel.attributesArea.getText();
         System.out.println(attributesText);
@@ -93,7 +91,7 @@ class ClassPanelTest {
         classPanel.addMethod(method2);
 
         classPanel.updateMethods();
-        // Verify that the methods are reflected correctly
+        // Checking that the methods are reflected correctly
         String methodsText = classPanel.methodsArea.getText();
         assertTrue(methodsText.contains("+ getId () :int"));
         assertTrue(methodsText.contains("# setName () :void"));

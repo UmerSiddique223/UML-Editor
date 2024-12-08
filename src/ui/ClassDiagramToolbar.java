@@ -14,12 +14,27 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 
+/**
+ * A toolbar for managing tools related to class diagrams.
+ * It includes buttons for adding classes, interfaces, and relationships
+ * such as association, composition, aggregation, and inheritance in the diagram.
+ */
 public class ClassDiagramToolbar extends VBox {
 
+    /** A map that stores tool actions associated with each tool name. */
     private final Map<String, Consumer<Void>> toolActions = new HashMap<>();
-    private ClassDiagramCanvasPanel classDiagramCanvasPanel;
-    private UseCaseDiagramPanel useCasePanel;
 
+    /** The canvas panel for managing the class diagram. */
+    private ClassDiagramCanvasPanel classDiagramCanvasPanel;
+
+    /**
+     * Constructs a ClassDiagramToolbar with the specified panel.
+     * The toolbar is populated with buttons for adding classes, interfaces,
+     * and various relationships to the class diagram.
+     *
+     * @param panel the panel (either a class diagram or use case diagram)
+     *              associated with the toolbar.
+     */
     public ClassDiagramToolbar(Object panel) {
         setSpacing(10);
         setStyle("-fx-background-color: #f0f0f0; -fx-padding: 10px;");

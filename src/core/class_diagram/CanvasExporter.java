@@ -10,8 +10,17 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Utility class for exporting a JavaFX canvas or node as an image file.
+ */
 public class CanvasExporter {
 
+    /**
+     * Exports the provided JavaFX {@code Node} to an image file.
+     *
+     * @param canvas the JavaFX node to export, typically a canvas or pane
+     * @param format the image format to export as (e.g., "png", "jpg")
+     */
     public static void exportToImage(Node canvas, String format) {
         // Capture the canvas as an image
         WritableImage snapshot = canvas.snapshot(new SnapshotParameters(), null);

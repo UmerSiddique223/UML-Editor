@@ -13,14 +13,33 @@ import ui.MainFrame;
 
 import java.util.ArrayList;
 
+/**
+ * A utility class that provides functionality for dragging and resizing UI components.
+ * This class enables the target component (a {@link Region}) to be resized and dragged
+ * within its parent container ({@link Pane}) using mouse events.
+ */
 public class DragResizeBean {
 
     private static final double RESIZE_MARGIN = 10;
 
+    /**
+     * Applies drag and resize functionality to the target region within the given parent container.
+     *
+     * @param target the region (UI element) to be dragged and resized
+     * @param parent the parent pane that holds the target region
+     * @param name the name associated with the target region (e.g., for identifying elements in the class diagram)
+     */
     public static void apply(Region target, Pane parent, String name) {
         enableDragAndResize(target, parent,name);
     }
 
+    /**
+     * Enables drag and resize functionality on the target region.
+     *
+     * @param target the region (UI element) to be dragged and resized
+     * @param parent the parent pane that holds the target region
+     * @param name the name associated with the target region
+     */
     private static void enableDragAndResize(Region target, Pane parent,String name) {
         final double[] dragData = new double[6];
         final boolean[] resizing = {false};
@@ -85,6 +104,13 @@ public class DragResizeBean {
         });
     }
 
+    /**
+     * Updates the cursor based on the mouse position relative to the target region.
+     * The cursor changes when the mouse hovers over a resize edge of the target region.
+     *
+     * @param target the region (UI element) being dragged or resized
+     * @param event the mouse event containing the current mouse position
+     */
     private static void updateCursor(Region target, MouseEvent event) {
         double mouseX = event.getX();
         double mouseY = event.getY();
@@ -112,6 +138,14 @@ public class DragResizeBean {
         }
     }
 
+    /**
+     * Handles resizing of the target region based on the mouse drag event and the cursor state.
+     *
+     * @param target the region (UI element) to be resized
+     * @param event the mouse event containing the current mouse position
+     * @param parent the parent pane containing the target region
+     * @param dragData an array containing previous drag/resize data for calculating the new size and position
+     */
     private static void resize(Region target, MouseEvent event, Pane parent, double[] dragData) {
         Cursor cursor = target.getCursor();
         double deltaX = event.getSceneX() - dragData[0];
