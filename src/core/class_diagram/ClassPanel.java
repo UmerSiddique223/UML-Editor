@@ -3,6 +3,7 @@ package core.class_diagram;
 
 import javafx.geometry.Pos;
 
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
@@ -119,9 +120,44 @@ public class ClassPanel extends VBox {
         getChildren().add(methodsArea); // Both have methods
 
         setAlignment(Pos.CENTER);
-        setOnMouseClicked(this::handleContextMenu);
+        if (MainFrame.getClassDiagramCanvasPanel().getDrawingMode()==""){
+
+            setOnMouseClicked(this::handleContextMenu);
+
+
+        }
+
+        propagateEventsToCanvas();
+
     }
 
+    private void propagateEventsToCanvas() {
+        this.addEventFilter(MouseEvent.ANY, event -> {
+            if (!ParentCanvas.getDrawingMode().isEmpty()) {
+                event.consume(); // Prevent interactions if in drawing mode
+            }
+        });
+
+        for (Node child : getChildren()) {
+            child.addEventFilter(MouseEvent.ANY, event -> {
+                if (!ParentCanvas.getDrawingMode().isEmpty()) {
+                    event.consume(); // Prevent child-specific interactions in drawing mode
+                }
+            });
+        }
+    }
+
+    // Helper Method to Propagate Events from a Specific Node
+    private void propagateEvents(Node node) {
+        node.addEventFilter(MouseEvent.ANY, event -> {
+            if (!ParentCanvas.getDrawingMode().isEmpty()) {
+                event.consume(); // Prevent interactions in drawing mode
+            } else {
+                // Allow propagation to parent (ClassPanel)
+                event.fireEvent(this, event.copyFor(this, this));
+            }
+        });
+    }
     private void propagateEvents(Control control) {
         control.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
             event.consume();

@@ -43,21 +43,12 @@ public class UsecaseToolbar extends VBox {
     public void loadToolsForDiagramType(String diagramType) {
         clearTools();
         if ("ClassDiagram".equals(diagramType) && classDiagramCanvasPanel != null) {
-//            // Add tools specific to Class Diagrams
-//            addTool("Aggregation", v -> setRelationshipTool("Aggregation"));
-//            addTool("Inheritance", v -> setRelationshipTool("Inheritance"));
-//            addTool("Composition", v -> setRelationshipTool("Composition"));
-//            addTool("Association", v -> setRelationshipTool("Association"));
+
         } else if ("UseCaseDiagram".equals(diagramType) && useCasePanel != null) {
             addTool("Actor", v -> useCasePanel.setCurrentTool("Actor")); // Placeholder for position
             addTool("Use Case", v -> useCasePanel.setCurrentTool("UseCase")); // Placeholder for position
         }
     }
 
-//    private void setRelationshipTool(String relationshipType) {
-//        if (canvasPanel != null) {
-//            canvasPanel.setDrawingMode(relationshipType);
-//            System.out.println(relationshipType + " Tool Selected");
-//        }
-//    }
+
 }
