@@ -39,8 +39,52 @@ public class ClassDiagram implements Serializable {
         }
         return list;
     }
+    public void removeClass(String className) {
+        for (ClassPanel c : classes) {
+            if (c.ClassName.equals(className)) {
+                classes.remove(c);
+                break;
+            }
+        }
+    }
 
+    public ClassPanel getClassAt(double x, double y) {
+        for (ClassPanel classPanel : classes) {
+            if (classPanel.contains(x, y)) {
+                return classPanel;
+            }
+        }
+        return null;
+    }
+    public void removeRelationship(String startClass, String endClass, String type) {
+        for (Relationship r : relationships) {
+            if (r.getStartClass().equals(startClass) && r.getEndClass().equals(endClass) && r.getType().equals(type)) {
+                r.deleteRelationship();
+                relationships.remove(r);
+                break;
+            }
+        }
+    }
 
+    public void removeRelations_of_a_Diagram(String className) {
+        for (Relationship r : relationships) {
+            if (r.getStartClass().equals(className) || r.getEndClass().equals(className)) {
+                r.deleteRelationship();
+                relationships.remove(r);
+            }
+        }
+//        relationships.removeIf(r -> r.getStartClass().equals(className) || r.getEndClass().equals(className));
+    }
+
+    public ArrayList<Relationship> getRelations_of_a_Diagram(String className) {
+        ArrayList<Relationship> list = new ArrayList<>();
+        for (Relationship r : relationships) {
+            if (r.getStartClass().equals(className) || r.getEndClass().equals(className)) {
+                list.add(r);
+            }
+        }
+        return list;
+    }
     public ClassPanel getClass(String className) {
         for (ClassPanel c : classes) {
             if (c.ClassName.equals(className)) {

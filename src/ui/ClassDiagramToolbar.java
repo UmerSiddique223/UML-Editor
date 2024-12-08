@@ -32,28 +32,33 @@ public class ClassDiagramToolbar extends VBox {
 //        ContextMenu contextMenu = new ContextMenu();
 
         addClassButton.setOnAction(ev -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Add Class");
-            dialog.setHeaderText("Enter Class Name:");
-            dialog.showAndWait().ifPresent(name -> classDiagramCanvasPanel.addClassToCanvas(new ClassPanel(name, false,100,100), 100, 100));
+            classDiagramCanvasPanel.enableClassPlacementMode(false); // false = regular class, true = interface
+        });
+        Button addInterfaceButton = new Button("Add Interface");
+
+
+        addInterfaceButton.setOnAction(ev -> {
+            classDiagramCanvasPanel.enableClassPlacementMode(true); // false = regular class, true = interface
         });
 
+
         getChildren().add(addClassButton);
+        getChildren().add(addInterfaceButton);
 
         Button button1 = new Button("Association");
-        button1.setOnAction(e -> classDiagramCanvasPanel.setRelationship("association"));
+        button1.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("association"));
         getChildren().add(button1);
 
         Button button2 = new Button("Composition");
-        button2.setOnAction(e -> classDiagramCanvasPanel.setRelationship("composition"));
+        button2.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("composition"));
         getChildren().add(button2);
 
         Button button3 = new Button("Aggregation");
-        button3.setOnAction(e -> classDiagramCanvasPanel.setRelationship("aggregation"));
+        button3.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("aggregation"));
         getChildren().add(button3);
 
         Button button4 = new Button("Inheritance");
-        button4.setOnAction(e -> classDiagramCanvasPanel.setRelationship("inheritance"));
+        button4.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("inheritance"));
         getChildren().add(button4);
     }
 

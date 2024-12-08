@@ -1,5 +1,6 @@
 package bean;
 
+import core.class_diagram.ClassPanel;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;
@@ -8,27 +9,37 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import ui.MainFrame;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class DragResizeBean {
 
     private static final double RESIZE_MARGIN = 10;
 
-    public static void apply(Region target, Pane parent) {
-        enableDragAndResize(target, parent);
+    public static void apply(Region target, Pane parent, String name) {
+        enableDragAndResize(target, parent,name);
     }
 
-    private static void enableDragAndResize(Region target, Pane parent) {
+    private static void enableDragAndResize(Region target, Pane parent,String name) {
         final double[] dragData = new double[6];
         final boolean[] resizing = {false};
 
         target.setOnMouseMoved(event -> {
-            updateCursor(target, event);
+            if (Objects.equals(MainFrame.getClassDiagramCanvasPanel().getDrawingMode(), "")){
+
+                updateCursor(target, event);}
+            else {
+                event.consume();
+
+            }
         });
 
         target.setOnMousePressed(event -> {
-            Cursor cursor = target.getCursor();
+            if (Objects.equals(MainFrame.getClassDiagramCanvasPanel().getDrawingMode(), "")){
+
+                Cursor cursor = target.getCursor();
             resizing[0] = cursor != Cursor.DEFAULT;
 
             if (resizing[0]) {
@@ -45,11 +56,17 @@ public class DragResizeBean {
                 dragData[1] = event.getSceneY();
                 dragData[4] = target.getLayoutX();
                 dragData[5] = target.getLayoutY();
+        }}
+            else {
+                event.consume();
             }
         });
 
         target.setOnMouseDragged(event -> {
-            if (resizing[0]) {
+
+            if (Objects.equals(MainFrame.getClassDiagramCanvasPanel().getDrawingMode(), "")){
+
+                if (resizing[0]) {
                 // Handle resizing
                 resize(target, event, parent, dragData);
             } else {
@@ -57,17 +74,37 @@ public class DragResizeBean {
                 double deltaX = event.getSceneX() - dragData[0];
                 double deltaY = event.getSceneY() - dragData[1];
 
-                double newX = Math.max(0, Math.min(parent.getWidth() - target.getWidth(), dragData[4] + deltaX));
-                double newY = Math.max(0, Math.min(parent.getHeight() - target.getHeight(), dragData[5] + deltaY));
+                double newX = Math.max(0, dragData[4] + deltaX);
+                double newY = Math.max(0, dragData[5] + deltaY);
+
+                // Extend canvas only for right and bottom
+                if (newX + target.getWidth() > parent.getWidth()) {
+                    parent.setPrefWidth(newX + target.getWidth());
+                }
+                if (newY + target.getHeight() > parent.getHeight()) {
+                    parent.setPrefHeight(newY + target.getHeight());
+                }
 
                 target.setLayoutX(newX);
                 target.setLayoutY(newY);
+
+                // Update position in MainFrame
+                MainFrame.getClassDiagramCanvasPanel().updatePosition(name, newX, newY);
+            }}
+            else {
+                event.consume();
             }
         });
 
         target.setOnMouseReleased(event -> {
-            target.setCursor(Cursor.DEFAULT);
-            resizing[0] = false;
+            if (MainFrame.getClassDiagramCanvasPanel().getDrawingMode()=="") {
+
+                target.setCursor(Cursor.DEFAULT);
+                resizing[0] = false;
+            }
+            else {
+                event.consume();
+            }
         });
     }
 
@@ -111,35 +148,40 @@ public class DragResizeBean {
         if (cursor == Cursor.SE_RESIZE) {
             newWidth = Math.min(Math.max(50, dragData[2] + deltaX), parent.getWidth() - newLayoutX);
             newHeight = Math.min(Math.max(50, dragData[3] + deltaY), parent.getHeight() - newLayoutY);
-        } else if (cursor == Cursor.SW_RESIZE) {
-            newWidth = Math.min(Math.max(50, dragData[2] - deltaX), newLayoutX + dragData[2]);
-            newHeight = Math.min(Math.max(50, dragData[3] + deltaY), parent.getHeight() - newLayoutY);
-            newLayoutX = Math.max(0, Math.min(newLayoutX + deltaX, parent.getWidth() - newWidth));
-        } else if (cursor == Cursor.NE_RESIZE) {
-            newWidth = Math.min(Math.max(50, dragData[2] + deltaX), parent.getWidth() - newLayoutX);
-            newHeight = Math.min(Math.max(50, dragData[3] - deltaY), newLayoutY + dragData[3]);
-            newLayoutY = Math.max(0, Math.min(newLayoutY + deltaY, parent.getHeight() - newHeight));
-        } else if (cursor == Cursor.NW_RESIZE) {
-            newWidth = Math.min(Math.max(50, dragData[2] - deltaX), newLayoutX + dragData[2]);
-            newHeight = Math.min(Math.max(50, dragData[3] - deltaY), newLayoutY + dragData[3]);
-            newLayoutX = Math.max(0, Math.min(newLayoutX + deltaX, parent.getWidth() - newWidth));
-            newLayoutY = Math.max(0, Math.min(newLayoutY + deltaY, parent.getHeight() - newHeight));
+
+            // Extend canvas only for right and bottom
+            if (newLayoutX + newWidth > parent.getWidth()) {
+                parent.setPrefWidth(newLayoutX + newWidth);
+            }
+            if (newLayoutY + newHeight > parent.getHeight()) {
+                parent.setPrefHeight(newLayoutY + newHeight);
+            }
         } else if (cursor == Cursor.E_RESIZE) {
             newWidth = Math.min(Math.max(50, dragData[2] + deltaX), parent.getWidth() - newLayoutX);
-        } else if (cursor == Cursor.W_RESIZE) {
-            newWidth = Math.min(Math.max(50, dragData[2] - deltaX), newLayoutX + dragData[2]);
-            newLayoutX = Math.max(0, Math.min(newLayoutX + deltaX, parent.getWidth() - newWidth));
+            if (newLayoutX + newWidth > parent.getWidth()) {
+                parent.setPrefWidth(newLayoutX + newWidth);
+            }
         } else if (cursor == Cursor.S_RESIZE) {
             newHeight = Math.min(Math.max(50, dragData[3] + deltaY), parent.getHeight() - newLayoutY);
-        } else if (cursor == Cursor.N_RESIZE) {
-            newHeight = Math.min(Math.max(50, dragData[3] - deltaY), newLayoutY + dragData[3]);
-            newLayoutY = Math.max(0, Math.min(newLayoutY + deltaY, parent.getHeight() - newHeight));
+            if (newLayoutY + newHeight > parent.getHeight()) {
+                parent.setPrefHeight(newLayoutY + newHeight);
+            }
         }
 
         target.setPrefSize(newWidth, newHeight);
         target.setLayoutX(newLayoutX);
         target.setLayoutY(newLayoutY);
+
+        // Update ClassPanel position if applicable
+        if (target instanceof StackPane && ((StackPane) target).getChildren().get(1) instanceof ClassPanel) {
+            ClassPanel classPanel = (ClassPanel) ((StackPane) target).getChildren().get(1);
+            classPanel.x = newLayoutX;
+            classPanel.y = newLayoutY;
+            System.out.println("Updated after resize: x=" + classPanel.x + ", y=" + classPanel.y);
+        }
     }
+
+
 
 
 }
