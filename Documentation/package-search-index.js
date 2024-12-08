@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"bean"},{"l":"core.class_diagram"},{"l":"core.usecase_diagram"},{"l":"data"},{"l":"ui"},{"l":"UMLMain"}];updateSearchResults();

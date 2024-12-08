@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Main-Class: UMLMain.Main
+Class-Path: junit-jupiter-5.9.0.jar junit-jupiter-api-5.9.0.jar opentest
+ 4j-1.2.0.jar junit-platform-commons-1.8.1.jar apiguardian-api-1.1.2.jar
+  junit-jupiter-params-5.9.0.jar junit-jupiter-engine-5.9.0.jar junit-pl
+ atform-engine-1.8.1.jar junit-jupiter-5.9.0.jar junit-jupiter-api-5.9.0
+ .jar opentest4j-1.2.0.jar junit-platform-commons-1.9.0.jar apiguardian-
+ api-1.1.2.jar junit-jupiter-params-5.9.0.jar junit-jupiter-engine-5.9.0
+ .jar junit-platform-engine-1.9.0.jar javafx-swt.jar javafx.base.jar jav
+ afx.controls.jar javafx.fxml.jar javafx.graphics.jar javafx.media.jar j
+ avafx.swing.jar javafx.web.jar
+
