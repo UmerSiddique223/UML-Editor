@@ -103,7 +103,6 @@ public class MainFrame extends Application {
             description.setText("Create or Load a Use Case Diagram\nUse this tool to create use case diagrams.");
         }
 
-        // Main Container for all the elements
         VBox actionBox = new VBox(20);
         actionBox.setAlignment(Pos.CENTER);
         actionBox.setPadding(new Insets(20));
