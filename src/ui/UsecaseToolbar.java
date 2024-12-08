@@ -19,6 +19,16 @@ public class UsecaseToolbar extends VBox {
         Button addUserCaseButton = new Button("Add Use Case");
         Button addRelationshipButton = new Button("Add Relationship");
         Button dragModeButton = new Button("Drag/Move Elements");
+        Button rectangleButton = new Button("Add Container");
+
+        Button editTextButton = new Button("Add/Edit Text");
+        editTextButton.setOnAction(e -> {
+            // Turn on edit mode
+            useCaseDiagramPanel.setEditTextMode(true);
+            System.out.println("Edit Text mode activated. Click on any actor to edit its text.");
+        });
+
+
 
         // Set up event handlers for the buttons
         addActorButton.setOnAction(e -> {
@@ -41,9 +51,11 @@ public class UsecaseToolbar extends VBox {
             useCaseDiagramPanel.setDragMode(true);
             System.out.println("Drag Mode activated.");
         });
+        rectangleButton.setOnAction(e -> useCaseDiagramPanel.addRectangle(100, 100)); // Add at a default position
+
 
         // Add buttons to the toolbar
-        getChildren().addAll(addActorButton, addUserCaseButton, addRelationshipButton, dragModeButton);
+        getChildren().addAll(addActorButton, addUserCaseButton, addRelationshipButton, dragModeButton,rectangleButton,editTextButton);
     }
 
     // Method to reset all modes before activating a new one

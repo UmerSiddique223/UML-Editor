@@ -17,16 +17,6 @@ public class AddRelationshipCommand implements Command {
     private boolean isInclude;
     private UseCaseRelationship relationship;
 
-    /**
-     * Updated constructor to include isExtend and isInclude parameters.
-     *
-     * @param diagramPanel    The diagram panel where the relationship is added.
-     * @param fromComponent   The source component of the relationship.
-     * @param toComponent     The target component of the relationship.
-     * @param relationshipText The label/text of the relationship.
-     * @param isExtend        Indicates if the relationship is an <<extends>>.
-     * @param isInclude       Indicates if the relationship is an <<includes>>.
-     */
     public AddRelationshipCommand(UseCaseDiagramPanel diagramPanel,
                                   UseCaseDiagramPanel.DiagramComponent fromComponent,
                                   UseCaseDiagramPanel.DiagramComponent toComponent,
@@ -44,9 +34,10 @@ public class AddRelationshipCommand implements Command {
     @Override
     public void execute() {
         try {
+            // Pass the isExtend and isInclude flags along when adding the relationship.
             relationship = diagramPanel.addRelationship(fromComponent, toComponent, relationshipText, isExtend, isInclude);
             LOGGER.info("Relationship '" + relationshipText + "' added between " + fromComponent.getText() + " and " + toComponent.getText() +
-                    (isExtend ? " [<<extends>>]" : isInclude ? " [<<includes>>]" : ""));
+                    (isExtend ? " [<<extend>>]" : isInclude ? " [<<include>>]" : ""));
         } catch (Exception e) {
             LOGGER.severe("Failed to execute AddRelationshipCommand: " + e.getMessage());
         }
@@ -55,8 +46,10 @@ public class AddRelationshipCommand implements Command {
     @Override
     public void undo() {
         try {
-            diagramPanel.removeRelationship(relationship);
-            LOGGER.info("Relationship removed via undo command.");
+            if (relationship != null) {
+                diagramPanel.removeRelationship(relationship);
+                LOGGER.info("Relationship '" + relationshipText + "' removed via undo.");
+            }
         } catch (Exception e) {
             LOGGER.severe("Failed to undo AddRelationshipCommand: " + e.getMessage());
         }
