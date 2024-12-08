@@ -840,11 +840,11 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
             container.setOnMouseDragged(this::componentOnMouseDragged);
             container.setOnMouseReleased(this::componentOnMouseReleased);
             // Parent might not be available at construction time, so we set it later
-            container.sceneProperty().addListener((_, _, newScene) -> {
-                if (newScene != null) {
-                    parentPanel = (UseCaseDiagramPanel) container.getParent();
-                }
-            });
+//            container.sceneProperty().addListener((_, _, newScene) -> {
+//                if (newScene != null) {
+//                    parentPanel = (UseCaseDiagramPanel) container.getParent();
+//                }
+//            });
             container.setOnMouseClicked(this::componentOnMouseClicked);
 
         }private void componentOnMouseClicked(MouseEvent event) {

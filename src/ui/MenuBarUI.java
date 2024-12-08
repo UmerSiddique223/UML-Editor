@@ -33,7 +33,7 @@ public class MenuBarUI extends MenuBar {
                 Pane currentPanel = MainFrame.getCurrentDiagramPanel();
 
                 if (currentPanel instanceof ClassDiagramCanvasPanel) {
-                    MainFrame.getClassDiagramCanvasPanel().saveDiagram(parentStage);
+                    MainFrame.getClassDiagramCanvasPanel().saveDiagram();
                 } else if (currentPanel instanceof UseCaseDiagramPanel) {
                     data.DiagramSaver.saveUseCaseDiagram((UseCaseDiagramPanel) currentPanel);
                 } else {
