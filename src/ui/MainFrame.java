@@ -66,9 +66,70 @@ public class MainFrame extends Application {
         Button classBtn = new Button("Class Diagram");
         Button useCaseBtn = new Button("Use Case Diagram");
 
-        styleButton(classBtn);
-        styleButton(useCaseBtn);
-        useCaseBtn.setOnAction(e -> showUseCaseDiagram());
+        // Set initial styles
+        classBtn.setStyle(filledButtonStyle);
+        useCaseBtn.setStyle(outlinedButtonStyle);
+
+        classBtn.setOnAction(e -> {
+            classBtn.setStyle(filledButtonStyle);
+            useCaseBtn.setStyle(outlinedButtonStyle);
+            updateHomePanel("Class Diagram");
+        });
+
+        useCaseBtn.setOnAction(e -> {
+            useCaseBtn.setStyle(filledButtonStyle);
+            classBtn.setStyle(outlinedButtonStyle);
+            updateHomePanel("Use Case Diagram");
+        });
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(classBtn, useCaseBtn);
+
+        homePanel.getChildren().addAll(heading, buttonBox);
+    }
+
+
+    private void updateHomePanel(String diagramType) {
+        homePanel.getChildren().removeIf(node -> node instanceof VBox || node instanceof Label);
+
+        // Adding Description text
+        Label description = new Label();
+        description.setStyle("-fx-font-size: 16px; -fx-text-fill: #4682b4; -fx-font-weight: bold;");
+        if ("Class Diagram".equals(diagramType)) {
+            description.setText("Create or Load a Class Diagram\nUse this tool to create class diagrams.");
+        } else if ("Use Case Diagram".equals(diagramType)) {
+            description.setText("Create or Load a Use Case Diagram\nUse this tool to create use case diagrams.");
+        }
+
+        VBox actionBox = new VBox(20);
+        actionBox.setAlignment(Pos.CENTER);
+        actionBox.setPadding(new Insets(20));
+        actionBox.setStyle("-fx-background-color: #f9f9f9; -fx-border-color: #d3d3d3; -fx-border-width: 1; -fx-padding: 10;");
+
+        // Create Class diagram Section
+        HBox createSection = new HBox(10);
+        createSection.setAlignment(Pos.CENTER);
+
+        TextField createTextField = new TextField();
+        createTextField.setPromptText("Enter project name...");
+        Button createButton = new Button("Create");
+        styleButton(createButton);
+
+        createButton.setOnAction(e -> {
+            String projectName = createTextField.getText().trim();
+            if (projectName.isEmpty()) {
+                showAlert("Project name cannot be empty!");
+            } else {
+                if (diagramType.equals("Class Diagram")) {
+                    showClassDiagram(projectName);
+                } else if (diagramType.equals("Use Case Diagram")) {
+                    showUseCaseDiagram(projectName);
+                }
+            }
+        });
+
+        createSection.getChildren().addAll(createTextField, createButton);
 
         classBtn.setOnAction(e -> showClassDiagram());
 
