@@ -70,11 +70,17 @@ public class ClassDiagramPropertiesBar extends VBox {
 
         ExportBox.getChildren().add(saveAsJavaCodeButton);
 
-        Button saveAsXMLButton = new Button("Save as XML");
+        Button saveAsXMLButton = new Button("Save in Projects");
 
         exportToPNGButton.setOnAction(event -> CanvasExporterBean.exportToImage(classDiagramCanvasPanel, "png"));
         exportToJPGButton.setOnAction(event -> CanvasExporterBean.exportToImage(classDiagramCanvasPanel, "jpg"));
-        saveAsXMLButton.setOnAction(event -> System.out.println("Saving as XML..."));
+        saveAsXMLButton.setOnAction(event -> {
+            try {
+                MainFrame.getClassDiagramCanvasPanel().saveDiagram();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         ExportBox.getChildren().addAll(exportLabel, exportToPNGButton, exportToJPGButton, saveAsXMLButton);
 

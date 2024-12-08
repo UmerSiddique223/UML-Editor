@@ -13,6 +13,8 @@ import javafx.scene.layout.VBox;
 import ui.MainFrame;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class ClassPanel extends VBox {
@@ -125,58 +127,63 @@ public class ClassPanel extends VBox {
                 // Add Attribute (only for classes)
                 MenuItem addAttribute = new MenuItem("Add Attribute");
                 addAttribute.setOnAction(ev -> {
-                    TextInputDialog nameDialog = new TextInputDialog();
-                    nameDialog.setTitle("Add Attribute");
-                    nameDialog.setHeaderText("Enter Attribute Name:");
-                    nameDialog.showAndWait().ifPresent(name -> {
-                        TextInputDialog typeDialog = new TextInputDialog();
-                        typeDialog.setTitle("Add Attribute");
-                        typeDialog.setHeaderText("Enter Attribute Type:");
-                        typeDialog.showAndWait().ifPresent(type -> {
-                            TextInputDialog accessDialog = new TextInputDialog();
-                            accessDialog.setTitle("Add Attribute");
-                            accessDialog.setHeaderText("Enter Attribute Access Level (public, private, etc.):");
-                            accessDialog.showAndWait().ifPresent(access -> {
-                                Attribute attribute = new Attribute(name, type, access);
-                                attributes.add(attribute);
-                                updateAttributes();
-                            });
-                        });
+                    // Single dialog for attribute input
+                    TextInputDialog dialog = new TextInputDialog();
+                    dialog.setTitle("Add Attribute");
+                    dialog.setHeaderText("Enter Attribute in Format: [access] [type] [name]");
+                    dialog.setContentText("Example: -\n+ int age (for public)");
+
+                    dialog.showAndWait().ifPresent(input -> {
+                        try {
+                            // Split the input into access, type, and name
+                            String[] parts = input.trim().split("\\s+");
+                            if (parts.length != 3) {
+                                throw new IllegalArgumentException("Invalid format. Expected: [access] [type] [name]");
+                            }
+
+                            // Parse shorthand access modifiers
+                            String accessSymbol = parts[0];
+                            String access = parseAccessLevel(accessSymbol);
+
+                            String type = parts[1];
+                            String name = parts[2];
+
+                            // Create and add the attribute
+                            Attribute attribute = new Attribute(name, type, access);
+                            attributes.add(attribute);
+                            updateAttributes();
+                        } catch (IllegalArgumentException error) {
+                            showError("Invalid Attribute Format", error.getMessage());
+                        }
                     });
                 });
                 contextMenu.getItems().add(addAttribute);
             }
 
-            // Add Method
+
+            // Method
+            if (!isInterface) {
             MenuItem addMethod = new MenuItem("Add Method");
             addMethod.setOnAction(ev -> {
-                TextInputDialog nameDialog = new TextInputDialog();
-                nameDialog.setTitle("Add Method");
-                nameDialog.setHeaderText("Enter Method Name:");
-                nameDialog.showAndWait().ifPresent(name -> {
-                    TextInputDialog returnTypeDialog = new TextInputDialog();
-                    returnTypeDialog.setTitle("Add Method");
-                    returnTypeDialog.setHeaderText("Enter Method Return Type:");
-                    returnTypeDialog.showAndWait().ifPresent(returnType -> {
-                        TextInputDialog paramsDialog = new TextInputDialog();
-                        paramsDialog.setTitle("Add Method");
-                        paramsDialog.setHeaderText("Enter Method Parameters (comma separated, e.g., int a, String b):");
-                        paramsDialog.showAndWait().ifPresent(paramsStr -> {
-                            ArrayList<String> parameters = new ArrayList<>();
-                            if (!paramsStr.isEmpty()) {
-                                String[] params = paramsStr.split(",");
-                                for (String param : params) {
-                                    parameters.add(param.trim());
-                                }
-                            }
-                            Method method = new Method(name, returnType, parameters, "public"); // Default public for interfaces
-                            methods.add(method);
-                            updateMethods();
-                        });
-                    });
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setTitle("Add Method");
+                dialog.setHeaderText("Enter Method in Format: [access] [returnType] [name](params)");
+                dialog.setContentText("Example: + int calculateSum(int a, int b)");
+
+                dialog.showAndWait().ifPresent(input -> {
+                    try {
+                        // Parse the method input
+                        Method method = parseMethodInput(input);
+                        methods.add(method);
+                        updateMethods();
+                    } catch (IllegalArgumentException error)
+                    {
+                        showError("Invalid Method Format", error.getMessage());
+                    }
                 });
             });
-
+            contextMenu.getItems().add(addMethod);
+}
             // Delete Panel
             MenuItem delete = new MenuItem("Delete " + (isInterface ? "Interface" : "Class"));
             delete.setOnAction(ev -> {
@@ -190,14 +197,66 @@ public class ClassPanel extends VBox {
 
             });
 
-            contextMenu.getItems().addAll(addMethod, delete);
+            contextMenu.getItems().addAll( delete);
             contextMenu.show(this, e.getScreenX(), e.getScreenY());
             e.consume();
         }
 
     }
+    private void showError(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
 
+    private Method parseMethodInput(String input) throws IllegalArgumentException {
+        String accessRegex = "[+\\-#]"; // Valid symbols for access modifiers
+        String methodRegex = String.format(
+                "^\\s*(%s)\\s+(\\w+)\\s+(\\w+)\\s*\\(([^)]*)\\)\\s*$",
+                accessRegex
+        );
+        Pattern pattern = Pattern.compile(methodRegex);
+        Matcher matcher = pattern.matcher(input.trim());
+
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid format. Expected: [access] [returnType] [name](params)");
+        }
+
+        // Extract components
+        String accessSymbol = matcher.group(1);
+        String returnType = matcher.group(2);
+        String name = matcher.group(3);
+        String paramsStr = matcher.group(4);
+
+        String access = parseAccessLevel(accessSymbol);
+
+        // Parse parameters
+        ArrayList<String> parameters = new ArrayList<>();
+        if (!paramsStr.isEmpty()) {
+            String[] params = paramsStr.split(",");
+            for (String param : params) {
+                parameters.add(param.trim());
+            }
+        }
+
+        return new Method(name, returnType, parameters, access);
+    }
+
+    private String parseAccessLevel(String symbol) throws IllegalArgumentException {
+        switch (symbol) {
+            case "-":
+                return "private";
+            case "+":
+                return "public";
+            case "#":
+                return "protected";
+            default:
+                throw new IllegalArgumentException("Invalid access level. Use -, +, or #.");
+        }
+    }
     private void updateAttributes() {
         StringBuilder attributesText = new StringBuilder();
         for (Attribute attribute : attributes) {

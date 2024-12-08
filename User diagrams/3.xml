@@ -5,12 +5,19 @@
         <Class name="Class1" type="class" x="129.60000000000002" y="42.39999999999999">
             <Attributes>
                 <Attribute access="public" name="1" type="String"/>
+                <Attribute access="public" name="age" type="int"/>
             </Attributes>
             <Methods>
                 <Method access="public" name="1" returnType="Void">
                     <Parameters>
                         <Parameter>int a</Parameter>
                         <Parameter>String b</Parameter>
+                    </Parameters>
+                </Method>
+                <Method access="public" name="calculate" returnType="int">
+                    <Parameters>
+                        <Parameter>int a</Parameter>
+                        <Parameter>int b</Parameter>
                     </Parameters>
                 </Method>
             </Methods>

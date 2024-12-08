@@ -23,7 +23,7 @@ public class MenuBarUI extends MenuBar {
 
         saveFile.setOnAction(event -> {
             try {
-                MainFrame.getClassDiagramCanvasPanel().saveDiagram(parentStage);
+                MainFrame.getClassDiagramCanvasPanel().saveDiagram();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

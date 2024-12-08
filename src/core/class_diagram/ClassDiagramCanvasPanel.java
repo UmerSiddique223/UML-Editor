@@ -112,7 +112,7 @@ public class ClassDiagramCanvasPanel extends Pane {
 
 
 
-    public void saveDiagram(Stage parentStage) throws Exception {
+    public void saveDiagram() throws Exception {
         System.out.println(diagram.Name + "  Name");
         System.out.println(diagram + "    hnjnjkdssd");
         if (diagram == null) {
