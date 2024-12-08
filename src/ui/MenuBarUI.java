@@ -33,7 +33,7 @@ public class MenuBarUI extends MenuBar {
                 Pane currentPanel = MainFrame.getCurrentDiagramPanel();
 
                 if (currentPanel instanceof ClassDiagramCanvasPanel) {
-                    MainFrame.getClassDiagramCanvasPanel().saveDiagram(parentStage);
+//                    MainFrame.getClassDiagramCanvasPanel().saveDiagram(parentStage);
                 } else if (currentPanel instanceof UseCaseDiagramPanel) {
                     data.DiagramSaver.saveUseCaseDiagram((UseCaseDiagramPanel) currentPanel);
                 } else {
@@ -147,11 +147,11 @@ public class MenuBarUI extends MenuBar {
                 try {
                     File file = new File((isClassDiagram ? CLASS_DIAGRAM_FOLDER : USE_CASE_FOLDER) + File.separator + selectedFile);
 
-                    if (isClassDiagram) {
-                        MainFrame.loadDiagram(file);
-                    } else {
-                        MainFrame.loadUseCaseDiagram(file);
-                    }
+//                    if (isClassDiagram) {
+//                        MainFrame.loadDiagram(file);
+//                    } else {
+//                        MainFrame.loadUseCaseDiagram(file);
+//                    }
 
                     loadStage.close();
                 } catch (Exception ex) {

@@ -65,13 +65,6 @@ public class UsecaseToolbar extends VBox {
         useCaseDiagramPanel.setAddUseCaseMode(false);
         useCaseDiagramPanel.setDragMode(false);
         useCaseDiagramPanel.setRelationshipCreationMode(false);
-    public void loadToolsForDiagramType(String diagramType) {
-        clearTools();
-        if ("ClassDiagram".equals(diagramType) && classDiagramCanvasPanel != null) {
-
-        } else if ("UseCaseDiagram".equals(diagramType) && useCasePanel != null) {
-            addTool("Actor", v -> useCasePanel.setCurrentTool("Actor")); // Placeholder for position
-            addTool("Use Case", v -> useCasePanel.setCurrentTool("UseCase")); // Placeholder for position
-        }
     }
+
 }

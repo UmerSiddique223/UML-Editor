@@ -263,30 +263,16 @@ public class MainFrame extends Application {
 
     }
 
-    }
 
     private void showUseCaseDiagram(String name) {
 
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add Use Case Diagram");
-        dialog.setHeaderText("Enter Use Case Diagram Name:");
         UseCaseDiagramPanel useCaseDiagramPanel = new UseCaseDiagramPanel(name);
-        usecaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
-        usecaseToolbar.loadToolsForDiagramType("UseCaseDiagram");
+        UsecaseToolbar usecaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
         rootPane.setLeft(usecaseToolbar);
         usecaseToolbar.setVisible(true);
 
         cardPane.getChildren().setAll(useCaseDiagramPanel);
-        dialog.showAndWait().ifPresent(name -> {
-            useCaseDiagramPanel = new UseCaseDiagramPanel(name);
-            useCaseDiagramPanel.setStyle("-fx-background-color: lightblue;");
-            UsecaseToolbar useCaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
-            rootPane.setLeft(useCaseToolbar);
-            cardPane.getChildren().setAll(useCaseDiagramPanel);
-            useCaseToolbar.setVisible(true);
-            currentDiagramPanel = useCaseDiagramPanel;
-
-        });
+        currentDiagramPanel = useCaseDiagramPanel;
     }
 
 
@@ -436,7 +422,7 @@ public class MainFrame extends Application {
         }
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+//    public static void main(String[] args) {
+//        launch(args);
+//    }
 }
