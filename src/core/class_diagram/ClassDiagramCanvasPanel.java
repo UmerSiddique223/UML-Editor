@@ -120,6 +120,8 @@ public class ClassDiagramCanvasPanel extends Pane {
             return;
         }
 
+
+
         DiagramSaver.saveDiagram(diagram);
     }
 
@@ -141,8 +143,6 @@ public class ClassDiagramCanvasPanel extends Pane {
     public void setOnClassRename(BiConsumer<ClassPanel, String> listener) {
         onClassRename = listener;
     }
-
-
     public void addClassToCanvas(ClassPanel classPanel, double x, double y) {
         javafx.scene.shape.Rectangle border = new Rectangle(200, 150);
         border.setFill(Color.TRANSPARENT);

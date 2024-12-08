@@ -4,6 +4,7 @@ package core.class_diagram;
 import javafx.geometry.Pos;
 
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -61,16 +62,40 @@ public class ClassPanel extends VBox {
         titleField.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-alignment: center;");
         titleField.setMaxWidth(Double.MAX_VALUE);
         titleField.setAlignment(Pos.CENTER);
+        titleField.focusedProperty().addListener((observable, oldFocus, newFocus) -> {
+            if (!newFocus) { // Lost focus
+                titleField.setText(ClassName); 
+                }
+        });
 
         // Update ClassName when text is changed
-        titleField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.trim().isEmpty()) {
-                String previousName = ClassName; // Store the old name
-                ClassName = newValue.trim();
-                
-                canvas.onClassRename.accept(this, previousName); // Pass both the class and old name
+        titleField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                String newValue = titleField.getText().trim();
+
+                if (!newValue.isEmpty()) {
+                    String previousName = ClassName; // Store the old name
+
+                    // Check if a class with the same name already exists
+                    if (MainFrame.getClassDiagramCanvasPanel().getDiagram()
+                            .getClasses().stream()
+                            .anyMatch(existingClass -> existingClass.getClassName().equalsIgnoreCase(newValue))) {
+                        showError("Error", "Class with the name '" + newValue + "' already exists.");
+                        // Revert to the previous name
+                        titleField.setText(previousName);
+                        return;
+                    }
+
+                    // Update the class name
+                    ClassName = newValue;
+                    canvas.onClassRename.accept(this, previousName); // Trigger rename event
+                } else {
+                    showError("Error", "Class name cannot be empty.");
+                    titleField.setText(ClassName); // Revert to the current class name
+                }
             }
         });
+
         propagateEvents(titleField);
 
         // Attributes Section (hidden for interfaces)
@@ -147,7 +172,9 @@ public class ClassPanel extends VBox {
 
                             String type = parts[1];
                             String name = parts[2];
-
+                            if (attributes.stream().anyMatch(attr -> attr.getName().equals(name))) {
+                                throw new IllegalArgumentException("Attribute with the name '" + name + "' already exists.");
+                            }
                             // Create and add the attribute
                             Attribute attribute = new Attribute(name, type, access);
                             attributes.add(attribute);
@@ -174,6 +201,11 @@ public class ClassPanel extends VBox {
                     try {
                         // Parse the method input
                         Method method = parseMethodInput(input);
+                        if (methods.stream().anyMatch(existingMethod ->
+                                existingMethod.getName().equals(method.getName()) &&
+                                        existingMethod.getParameters().equals(method.getParameters()))) {
+                            throw new IllegalArgumentException("Method with the same name and parameters already exists.");
+                        }
                         methods.add(method);
                         updateMethods();
                     } catch (IllegalArgumentException error)

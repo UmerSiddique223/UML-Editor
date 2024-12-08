@@ -2,7 +2,7 @@
 <Diagram>
     <Name>3</Name>
     <Classes>
-        <Class name="Class1" type="class" x="129.60000000000002" y="42.39999999999999">
+        <Class name="Clas" type="class" x="129.60000000000002" y="42.39999999999999">
             <Attributes>
                 <Attribute access="public" name="1" type="String"/>
                 <Attribute access="public" name="age" type="int"/>
