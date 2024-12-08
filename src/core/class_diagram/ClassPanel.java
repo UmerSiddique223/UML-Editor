@@ -260,6 +260,18 @@ public class ClassPanel extends VBox {
 
     }
 
+    public void setMethods(ArrayList<Method> methods) {
+        this.methods.clear();
+        this.methods.addAll(methods);
+        updateMethods();
+    }
+
+    public void setAttributes(ArrayList<Attribute> attributes) {
+        this.attributes.clear();
+        this.attributes.addAll(attributes);
+        updateAttributes();
+    }
+
     public void addMethod(Method method) {
         methods.add(method);
     }

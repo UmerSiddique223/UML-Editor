@@ -27,6 +27,8 @@ import java.util.function.Consumer;
 
 // Canvas for Class Diagrams
 public class ClassDiagramCanvasPanel extends Pane {
+    private boolean isDragSource = false;
+
     ClassDiagram diagram;
     private String drawingMode = "";
 
@@ -37,10 +39,33 @@ public class ClassDiagramCanvasPanel extends Pane {
         setPrefSize(800, 600);
 
         setOnMouseClicked(this::handleMouseClick);
+
+//        setOnDragDetected(event -> {
+//            isDragSource = true;
+//            startFullDrag(); // Enable full drag-and-drop gesture
+//            event.consume();
+//        });
+//
+//        // Handle drag drop
+//        setOnMouseDragReleased(event -> {
+//            if (!isDragSource) {
+//                ClassPanel sourceClass = getSourceClassPanel();
+//                ClassPanel targetClass = this.diagram.getClassAt(event.getX(), event.getY());
+//
+//                if (sourceClass != null && sourceClass != targetClass) {
+//                    setRelationship("association", sourceClass.getClassName(), targetClass.getClassName());
+//                }
+//            }
+//            isDragSource = false;
+//            event.consume();
+//        });
 //        setOnMouseMoved(this::handleMouseMove); // Add dynamic line updates.
 
     }
-
+//    private ClassPanel getSourceClassPanel() {
+//        // Logic to determine the source class panel from drag context.
+//        return (ClassPanel) getScene().lookup(".drag-source"); // Example mechanism
+//    }
     public ClassDiagram getDiagram() {
         return diagram;
     }

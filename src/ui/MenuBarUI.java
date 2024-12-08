@@ -1,11 +1,9 @@
 package ui;
 
-import core.class_diagram.ClassDiagramCanvasPanel;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -97,7 +95,7 @@ public class MenuBarUI extends MenuBar {
             String selectedFile = fileList.getSelectionModel().getSelectedItem();
             if (selectedFile != null) {
                 try {
-                    MainFrame.loadDiagram(new File("User diagrams" + File.separator + selectedFile));
+                    MainFrame.loadClassDiagram(new File("User diagrams" + File.separator + selectedFile));
                     // Call the load diagram logic
                 } catch (Exception ex) {
                     showErrorDialog("Error", "Failed to load diagram: " + ex.getMessage());

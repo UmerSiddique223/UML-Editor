@@ -4,13 +4,10 @@ import core.class_diagram.*;
 import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.w3c.dom.Document;
@@ -293,7 +290,7 @@ public class MainFrame extends Application {
     }
 
 
-    public static void loadDiagram(File file) throws Exception {
+    public static void loadClassDiagram(File file) throws Exception {
         classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
         classDiagramCanvasPanel.setStyle("-fx-background-color: lightgray;");
         classDiagramCanvasPanel.setPrefSize(2000, 2000);
@@ -389,7 +386,10 @@ public class MainFrame extends Application {
         rootPane.setRight(propertiesBar);
 
         for (ClassPanel c : classDiagram.getClasses()) {
-            classDiagramCanvasPanel.addClassToCanvas(new ClassPanel(c.getClassName(),c.isInterface(), c.getX(), c.getY(), classDiagramCanvasPanel), c.getX(), c.getY());
+            ClassPanel cp = new ClassPanel(c.getClassName(), c.isInterface(), c.getX(), c.getY(), classDiagramCanvasPanel);
+            cp.setAttributes(c.getAttributes());
+            cp.setMethods(c.getMethods());
+            classDiagramCanvasPanel.addClassToCanvas(cp, c.getX(), c.getY());
 
 
         }
