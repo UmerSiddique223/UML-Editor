@@ -12,6 +12,7 @@ import javafx.scene.layout.StackPane;
 import ui.MainFrame;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * A utility class that provides functionality for dragging and resizing UI components.
@@ -45,11 +46,19 @@ public class DragResizeBean {
         final boolean[] resizing = {false};
 
         target.setOnMouseMoved(event -> {
-            updateCursor(target, event);
+            if (Objects.equals(MainFrame.getClassDiagramCanvasPanel().getDrawingMode(), "")){
+
+                updateCursor(target, event);}
+            else {
+                event.consume();
+
+            }
         });
 
         target.setOnMousePressed(event -> {
-            Cursor cursor = target.getCursor();
+            if (Objects.equals(MainFrame.getClassDiagramCanvasPanel().getDrawingMode(), "")){
+
+                Cursor cursor = target.getCursor();
             resizing[0] = cursor != Cursor.DEFAULT;
 
             if (resizing[0]) {
@@ -66,11 +75,17 @@ public class DragResizeBean {
                 dragData[1] = event.getSceneY();
                 dragData[4] = target.getLayoutX();
                 dragData[5] = target.getLayoutY();
+        }}
+            else {
+                event.consume();
             }
         });
 
         target.setOnMouseDragged(event -> {
-            if (resizing[0]) {
+
+            if (Objects.equals(MainFrame.getClassDiagramCanvasPanel().getDrawingMode(), "")){
+
+                if (resizing[0]) {
                 // Handle resizing
                 resize(target, event, parent, dragData);
             } else {
@@ -94,13 +109,21 @@ public class DragResizeBean {
 
                 // Update position in MainFrame
                 MainFrame.getClassDiagramCanvasPanel().updatePosition(name, newX, newY);
+            }}
+            else {
+                event.consume();
             }
         });
 
         target.setOnMouseReleased(event -> {
-            target.setCursor(Cursor.DEFAULT);
-            resizing[0] = false;
+            if (MainFrame.getClassDiagramCanvasPanel().getDrawingMode()=="") {
 
+                target.setCursor(Cursor.DEFAULT);
+                resizing[0] = false;
+            }
+            else {
+                event.consume();
+            }
         });
     }
 

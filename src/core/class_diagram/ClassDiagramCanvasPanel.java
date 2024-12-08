@@ -5,7 +5,9 @@ import bean.DragResizeBean;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -22,28 +24,38 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 // Canvas for Class Diagrams
 public class ClassDiagramCanvasPanel extends Pane {
+
     ClassDiagram diagram;
     private String drawingMode = "";
+    Line temporaryLine =null;
 
+    private ClassPanel startClass = null; // To store the class where the drag started
     private ArrayList<Relationship> relationships = new ArrayList<>(); // Store relationships
 
     public ClassDiagramCanvasPanel() {
         setStyle("-fx-background-color: white;");
         setPrefSize(800, 600);
 
-        setOnMouseClicked(this::handleMouseClick);
-//        setOnMouseMoved(this::handleMouseMove); // Add dynamic line updates.
+        setOnMouseClicked(this::handleMousePressed);
+        addEventFilter(MouseEvent.MOUSE_PRESSED, this::handleMousePressed);
+        addEventFilter(MouseEvent.MOUSE_MOVED, this::handleMouseMoved);
+        addEventFilter(MouseEvent.MOUSE_RELEASED, this::handleMouseReleased);
 
     }
-
     public ClassDiagram getDiagram() {
         return diagram;
     }
+    private ClassPanel getSourceClassPanel() {
+        // Logic to determine the source class panel from drag context.
+        return (ClassPanel) getScene().lookup(".drag-source"); // Example mechanism
+    }
+
 
     public void setCurrentDiagram(ClassDiagram diagram) {
         this.diagram = diagram;
@@ -87,14 +99,26 @@ public class ClassDiagramCanvasPanel extends Pane {
     }
 
 
+    public void setDrawingMode(String mode) {
+        this.drawingMode = mode;
+        System.out.println("Drawing mode set to: " + mode);
 
-    public void saveDiagram(Stage parentStage) throws Exception {
+        if (!mode.isEmpty()) {
+            // Provide visual feedback that the canvas is in drawing mode
+            setCursor(Cursor.CROSSHAIR);
+        } else {
+            setCursor(Cursor.DEFAULT);
+        }
+    }
+    public void saveDiagram() throws Exception {
         System.out.println(diagram.Name + "  Name");
         System.out.println(diagram + "    hnjnjkdssd");
         if (diagram == null) {
             System.out.println("No diagram to save.");
             throw new Exception("No diagram to save.");
         }
+
+
 
         DiagramSaver.saveDiagram(diagram);
     }
@@ -117,8 +141,6 @@ public class ClassDiagramCanvasPanel extends Pane {
     public void setOnClassRename(BiConsumer<ClassPanel, String> listener) {
         onClassRename = listener;
     }
-
-
     public void addClassToCanvas(ClassPanel classPanel, double x, double y) {
         javafx.scene.shape.Rectangle border = new Rectangle(200, 150);
         border.setFill(Color.TRANSPARENT);
@@ -142,6 +164,83 @@ public class ClassDiagramCanvasPanel extends Pane {
         onClassAdded.accept(classPanel);
 
     }
+
+
+    public  String getDrawingMode() {
+        return drawingMode;
+    }
+
+    // Handle mouse pressed to start the drag process
+    private void handleMousePressed(MouseEvent event) {
+        if (Objects.equals(drawingMode, ""))
+            return;
+        System.out.println("inside");
+        // Find the class the mouse was clicked on (this will be the starting class)
+        startClass = getClassUnderMouse(event.getX(), event.getY());
+        if (startClass != null) {
+
+            if (temporaryLine == null) { // Initialize the temporary line only once
+                temporaryLine = new Line(event.getX(), event.getY(), event.getX(), event.getY());
+                temporaryLine.setStroke(Color.BLACK);
+                temporaryLine.setStrokeWidth(2);
+                temporaryLine.getStrokeDashArray().addAll(5.0, 5.0);
+                getChildren().add(temporaryLine);
+            }
+
+        }
+    }
+
+    // Handle mouse moved to update the temporary line
+    private void handleMouseMoved(MouseEvent event) {
+        System.out.println(temporaryLine+"   lp");
+        if (temporaryLine != null) {
+            // Update the temporary line to follow the mouse
+            System.out.println(event.getX()+"   l"+ event.getY());
+
+            temporaryLine.setEndX(event.getX());
+            temporaryLine.setEndY(event.getY());
+
+
+
+        }
+    }
+
+    // Handle mouse released to finalize the relationship
+    private void handleMouseReleased(MouseEvent event) {
+        if (temporaryLine != null && startClass != null) {
+            // Find the class the mouse was released over (this will be the ending class)
+            ClassPanel endClass = getClassUnderMouse(event.getX(), event.getY());
+
+            if (endClass != null && !endClass.equals(startClass)) {
+                // Call the setRelationship function with the class names
+                setRelationship(drawingMode, startClass.getClassName(), endClass.getClassName());
+            }
+
+            // Remove the temporary line
+            getChildren().remove(temporaryLine);
+            temporaryLine = null;
+
+            startClass = null;
+            setDrawingMode("");
+        }
+    }
+
+    // Method to get the class under the mouse based on the coordinates
+    private ClassPanel getClassUnderMouse(double x, double y) {
+        for (Node node : getChildren()) {
+            if (node instanceof StackPane) {
+                StackPane container = (StackPane) node;
+                if (container.getBoundsInParent().contains(x, y)) {
+                    return (ClassPanel) container.getChildren().get(1); // Assuming the class is the second child
+                }
+            }
+        }
+        return null; // No class under the mouse
+    }
+
+    // Set the relationship (This method is passed from the outside)
+
+
 
     public void enableClassPlacementMode(boolean isInterface) {
         // Change the cursor to a plus icon
@@ -227,57 +326,7 @@ public class ClassDiagramCanvasPanel extends Pane {
             }
         }
     }
-//        AbstractDiagramPanel clickedDiagram = findDiagramAt(event);
-//
-//        if (clickedDiagram == null) {
-//            return;
-//        }
-//
-//        if (startDiagram == null) {
-//            startDiagram = clickedDiagram;
-//            System.out.println("Start diagram selected.");
-//            createTempLine(startDiagram.getLayoutX() + startDiagram.getWidth() / 2,
-//                    startDiagram.getLayoutY() + startDiagram.getHeight() / 2);
-//        } else if (clickedDiagram != startDiagram) {
-//            endDiagram = clickedDiagram;
-//            System.out.println("End diagram selected.");
-//            finalizeRelationship();
-//        }
-//
-//    }
 
-
-//    private void handleMouseMove(MouseEvent event) {
-//        if (tempLine != null) {
-//            updateTempLine(event.getX(), event.getY());
-//        }
-//    }
-
-//    private void createTempLine(double x, double y) {
-//        tempLine = new Line();
-//        tempLine.setStartX(x);
-//        tempLine.setStartY(y);
-//        tempLine.setEndX(x);
-//        tempLine.setEndY(y);
-//        tempLine.setStroke(Color.GRAY);
-//        tempLine.getStrokeDashArray().addAll(5.0, 5.0);
-//
-//        getChildren().add(tempLine);
-//    }
-//
-//    private void updateTempLine(double x, double y) {
-//        if (tempLine != null) {
-//            tempLine.setEndX(x);
-//            tempLine.setEndY(y);
-//        }
-//    }
-//
-//    private void clearTempLine() {
-//        if (tempLine != null) {
-//            getChildren().remove(tempLine);
-//            tempLine = null;
-//        }
-//    }
 
     private void createDeleteContextMenu(final Line relationshipLine, final String startClassName, final String endClassName, final String relationshipType) {
         ContextMenu contextMenu = new ContextMenu();
@@ -442,6 +491,9 @@ public class ClassDiagramCanvasPanel extends Pane {
         }
         else if (relationshipType.equals("composition")) {
             // Get parent StackPanes
+            ClassPanel temp=startClass;
+            startClass=endClass;
+            endClass=temp;
             StackPane wholeParent = (StackPane) startClass.getParent();
             StackPane partParent = (StackPane) endClass.getParent();
 
@@ -480,6 +532,9 @@ public class ClassDiagramCanvasPanel extends Pane {
             System.out.println("Composition relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
         }
         else if (relationshipType.equals("aggregation")) {
+            ClassPanel temp=startClass;
+            startClass=endClass;
+            endClass=temp;
             // Get parent StackPanes
             StackPane wholeParent = (StackPane) startClass.getParent();
             StackPane partParent = (StackPane) endClass.getParent();
@@ -518,6 +573,9 @@ public class ClassDiagramCanvasPanel extends Pane {
             createDeleteContextMenu(aggregationLine, startClass.ClassName, endClass.ClassName, "aggregation");
             System.out.println("Aggregation relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
         } else if (relationshipType == "inheritance") {
+            ClassPanel temp=startClass;
+            startClass=endClass;
+            endClass=temp;
             // Get parent StackPanes
             StackPane parentClassParent = (StackPane) startClass.getParent(); // Superclass
             StackPane childClassParent = (StackPane) endClass.getParent(); // Subclass

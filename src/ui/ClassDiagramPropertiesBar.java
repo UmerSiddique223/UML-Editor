@@ -3,8 +3,12 @@ package ui;
 import core.class_diagram.ClassDiagramCanvasPanel;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
-import core.class_diagram.CanvasExporter;
+import bean.CanvasExporterBean;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
+
+import javax.swing.*;
+import java.io.File;
 
 
 /**
@@ -70,11 +74,29 @@ public class ClassDiagramPropertiesBar extends VBox {
         Label exportLabel = new Label("Export:");
         Button exportToPNGButton = new Button("Export to PNG");
         Button exportToJPGButton = new Button("Export to JPG");
-        Button saveAsXMLButton = new Button("Save as XML");
+        Button saveAsJavaCodeButton = new Button("Save as Java Code");
+        saveAsJavaCodeButton.setOnAction(event -> {
+            try {
+                String outputDirectory = chooseOutputDirectory((Stage) this.getScene().getWindow());
+                CanvasExporterBean.exportToJavaCode(MainFrame.getClassDiagramCanvasPanel().getDiagram(), outputDirectory);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
 
-        exportToPNGButton.setOnAction(event -> CanvasExporter.exportToImage(classDiagramCanvasPanel, "png"));
-        exportToJPGButton.setOnAction(event -> CanvasExporter.exportToImage(classDiagramCanvasPanel, "jpg"));
-        saveAsXMLButton.setOnAction(event -> System.out.println("Saving as XML..."));
+        ExportBox.getChildren().add(saveAsJavaCodeButton);
+
+        Button saveAsXMLButton = new Button("Save in Projects");
+
+        exportToPNGButton.setOnAction(event -> CanvasExporterBean.exportToImage(classDiagramCanvasPanel, "png"));
+        exportToJPGButton.setOnAction(event -> CanvasExporterBean.exportToImage(classDiagramCanvasPanel, "jpg"));
+        saveAsXMLButton.setOnAction(event -> {
+            try {
+                MainFrame.getClassDiagramCanvasPanel().saveDiagram();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         ExportBox.getChildren().addAll(exportLabel, exportToPNGButton, exportToJPGButton, saveAsXMLButton);
 
@@ -86,6 +108,17 @@ public class ClassDiagramPropertiesBar extends VBox {
         // Add the titled pane to the VBox
         getChildren().add(titledPane);
         getChildren().add(exportTiltedPane);
+    }
+    public static String chooseOutputDirectory(Stage stage) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Select Output Directory");
+
+        // Show directory chooser
+        File selectedDirectory = directoryChooser.showDialog(stage);
+        if (selectedDirectory != null) {
+            return selectedDirectory.getAbsolutePath();
+        }
+        return null; // User cancelled
     }
 
     /**

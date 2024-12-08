@@ -61,19 +61,19 @@ public class ClassDiagramToolbar extends VBox {
         getChildren().add(addInterfaceButton);
 
         Button button1 = new Button("Association");
-        button1.setOnAction(e -> classDiagramCanvasPanel.setRelationship("association",null,null));
+        button1.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("association"));
         getChildren().add(button1);
 
         Button button2 = new Button("Composition");
-        button2.setOnAction(e -> classDiagramCanvasPanel.setRelationship("composition",null,null));
+        button2.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("composition"));
         getChildren().add(button2);
 
         Button button3 = new Button("Aggregation");
-        button3.setOnAction(e -> classDiagramCanvasPanel.setRelationship("aggregation",null,null));
+        button3.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("aggregation"));
         getChildren().add(button3);
 
         Button button4 = new Button("Inheritance");
-        button4.setOnAction(e -> classDiagramCanvasPanel.setRelationship("inheritance",null,null));
+        button4.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("inheritance"));
         getChildren().add(button4);
     }
 

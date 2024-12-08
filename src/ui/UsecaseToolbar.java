@@ -1,63 +1,70 @@
 package ui;
 
-import core.class_diagram.ClassDiagramCanvasPanel;
 import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
 public class UsecaseToolbar extends VBox {
+    private UseCaseDiagramPanel useCaseDiagramPanel;
 
-    private final Map<String, Consumer<Void>> toolActions = new HashMap<>();
-    private ClassDiagramCanvasPanel classDiagramCanvasPanel;
-    private UseCaseDiagramPanel useCasePanel;
+    public UsecaseToolbar(UseCaseDiagramPanel useCaseDiagramPanel) {
+        this.useCaseDiagramPanel = useCaseDiagramPanel;
 
-    public UsecaseToolbar(Object panel) {
+        // Style the toolbar
         setSpacing(10);
         setStyle("-fx-background-color: #f0f0f0; -fx-padding: 10px;");
 
-        if (panel instanceof ClassDiagramCanvasPanel) {
-            this.classDiagramCanvasPanel = (ClassDiagramCanvasPanel) panel;
-        } else if (panel instanceof UseCaseDiagramPanel) {
-            this.useCasePanel = (UseCaseDiagramPanel) panel;
-        } else {
-            throw new IllegalArgumentException("Unsupported panel type: " + panel.getClass().getName());
-        }
+        // Add buttons for use case diagram-specific actions
+        Button addActorButton = new Button("Add Actor");
+        Button addUserCaseButton = new Button("Add Use Case");
+        Button addRelationshipButton = new Button("Add Relationship");
+        Button dragModeButton = new Button("Drag/Move Elements");
+        Button rectangleButton = new Button("Add Container");
+        Button deleteMenuItem = new Button("Delete");
+
+        Button editTextButton = new Button("Add/Edit Text");
+        editTextButton.setOnAction(e -> {
+            useCaseDiagramPanel.setEditTextMode(true);
+            System.out.println("Edit Text mode activated. Click on any actor to edit its text.");
+        });
+
+
+
+        // Set up event handlers for the buttons
+        addActorButton.setOnAction(e -> {
+            resetOtherModes();
+            useCaseDiagramPanel.setAddActorMode(true);
+            System.out.println("Add Actor mode activated.");
+        });
+        addUserCaseButton.setOnAction(e -> {
+            resetOtherModes();
+            useCaseDiagramPanel.setAddUseCaseMode(true);
+            System.out.println("Add Use Case mode activated.");
+        });
+        addRelationshipButton.setOnAction(e -> {
+            resetOtherModes();
+            useCaseDiagramPanel.initiateRelationshipCreation();
+            System.out.println("Add Relationship mode activated.");
+        });
+        dragModeButton.setOnAction(e -> {
+            resetOtherModes();
+            useCaseDiagramPanel.setDragMode(true);
+            System.out.println("Drag Mode activated.");
+        });
+        rectangleButton.setOnAction(e -> useCaseDiagramPanel.addRectangle(100, 100)); // Add at a default position
+
+        deleteMenuItem.setOnAction(event -> useCaseDiagramPanel.setDeleteMode(true));
+
+        // Add buttons to the toolbar
+        getChildren().addAll(addActorButton, addUserCaseButton, addRelationshipButton, dragModeButton,editTextButton,deleteMenuItem);
     }
 
-    public void addTool(String label, Consumer<Void> action) {
-        Button button = new Button(label);
-        button.setOnAction(e -> action.accept(null));
-        getChildren().add(button);
-        toolActions.put(label, action);
+    // Method to reset all modes before activating a new one
+    private void resetOtherModes() {
+        useCaseDiagramPanel.setAddActorMode(false);
+        useCaseDiagramPanel.setAddUseCaseMode(false);
+        useCaseDiagramPanel.setDragMode(false);
+        useCaseDiagramPanel.setRelationshipCreationMode(false);
     }
 
-    public void clearTools() {
-        getChildren().clear();
-        toolActions.clear();
-    }
-
-    public void loadToolsForDiagramType(String diagramType) {
-        clearTools();
-        if ("ClassDiagram".equals(diagramType) && classDiagramCanvasPanel != null) {
-//            // Add tools specific to Class Diagrams
-//            addTool("Aggregation", v -> setRelationshipTool("Aggregation"));
-//            addTool("Inheritance", v -> setRelationshipTool("Inheritance"));
-//            addTool("Composition", v -> setRelationshipTool("Composition"));
-//            addTool("Association", v -> setRelationshipTool("Association"));
-        } else if ("UseCaseDiagram".equals(diagramType) && useCasePanel != null) {
-            addTool("Actor", v -> useCasePanel.setCurrentTool("Actor")); // Placeholder for position
-            addTool("Use Case", v -> useCasePanel.setCurrentTool("UseCase")); // Placeholder for position
-        }
-    }
-
-//    private void setRelationshipTool(String relationshipType) {
-//        if (canvasPanel != null) {
-//            canvasPanel.setDrawingMode(relationshipType);
-//            System.out.println(relationshipType + " Tool Selected");
-//        }
-//    }
 }

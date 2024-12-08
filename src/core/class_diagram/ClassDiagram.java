@@ -119,6 +119,15 @@ public class ClassDiagram implements Serializable {
         }
     }
 
+    public ClassPanel getClassAt(double x, double y) {
+        for (ClassPanel classPanel : classes) {
+            if (classPanel.contains(x, y)) {
+                return classPanel;
+            }
+        }
+        return null;
+    }
+
     /**
      * Removes all relationships associated with a specific class from the diagram.
      *

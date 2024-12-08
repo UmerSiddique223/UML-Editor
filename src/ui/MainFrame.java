@@ -4,13 +4,10 @@ import core.class_diagram.*;
 import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.w3c.dom.Document;
@@ -19,6 +16,7 @@ import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
 
+import core.usecase_diagram.UseCaseDiagramPanel;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,8 +34,9 @@ public class MainFrame extends Application {
     private static StackPane cardPane; // For switching between views
     private VBox homePanel;
     private static ClassDiagramCanvasPanel classDiagramCanvasPanel;
-    private UsecaseToolbar usecaseToolbar; // Left-side toolbar
     private static ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
+    private static UseCaseDiagramPanel useCaseDiagramPanel;
+    private static Pane currentDiagramPanel;
 
     /**
      * Initializes the main stage and sets up the initial UI components.
@@ -130,7 +129,6 @@ public class MainFrame extends Application {
             description.setText("Create or Load a Use Case Diagram\nUse this tool to create use case diagrams.");
         }
 
-        // Main Container for all the elements
         VBox actionBox = new VBox(20);
         actionBox.setAlignment(Pos.CENTER);
         actionBox.setPadding(new Insets(20));
@@ -300,18 +298,20 @@ public class MainFrame extends Application {
      */
     private void showUseCaseDiagram(String name) {
 
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add Use Case Diagram");
-        dialog.setHeaderText("Enter Use Case Diagram Name:");
         UseCaseDiagramPanel useCaseDiagramPanel = new UseCaseDiagramPanel(name);
-        usecaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
-        usecaseToolbar.loadToolsForDiagramType("UseCaseDiagram");
+        UsecaseToolbar usecaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
         rootPane.setLeft(usecaseToolbar);
         usecaseToolbar.setVisible(true);
 
         cardPane.getChildren().setAll(useCaseDiagramPanel);
-
+        currentDiagramPanel = useCaseDiagramPanel;
     }
+
+
+    public static Pane getCurrentDiagramPanel() {
+        return currentDiagramPanel;
+    }
+
 
     public static ClassDiagramCanvasPanel getClassDiagramCanvasPanel() {
         return classDiagramCanvasPanel;
@@ -329,13 +329,15 @@ public class MainFrame extends Application {
         alert.showAndWait();
     }
 
+
     /**
      * Loads a diagram from the given file and initializes the canvas with the loaded diagram.
      *
      * @param file the file to load the diagram from
      * @throws Exception if an error occurs during file parsing or diagram loading
      */
-    public static void loadDiagram(File file) throws Exception {
+    public static void loadClassDiagram(File file) throws Exception {
+
         classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
         classDiagramCanvasPanel.setStyle("-fx-background-color: lightgray;");
         classDiagramCanvasPanel.setPrefSize(2000, 2000);
@@ -431,7 +433,10 @@ public class MainFrame extends Application {
         rootPane.setRight(propertiesBar);
 
         for (ClassPanel c : classDiagram.getClasses()) {
-            classDiagramCanvasPanel.addClassToCanvas(new ClassPanel(c.getClassName(),c.isInterface(), c.getX(), c.getY(), classDiagramCanvasPanel), c.getX(), c.getY());
+            ClassPanel cp = new ClassPanel(c.getClassName(), c.isInterface(), c.getX(), c.getY(), classDiagramCanvasPanel);
+            cp.setAttributes(c.getAttributes());
+            cp.setMethods(c.getMethods());
+            classDiagramCanvasPanel.addClassToCanvas(cp, c.getX(), c.getY());
 
 
         }
@@ -441,5 +446,27 @@ public class MainFrame extends Application {
             }
         });
 
+
+
     }
+
+    static void loadUseCaseDiagram(File file) throws Exception {
+        UseCaseDiagramPanel loadedDiagram = data.DiagramSaver.loadUseCaseDiagram(file);
+
+        if (loadedDiagram != null) {
+            useCaseDiagramPanel = loadedDiagram;
+            useCaseDiagramPanel.setStyle("-fx-background-color: lightblue;");
+            UsecaseToolbar useCaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
+            rootPane.setLeft(useCaseToolbar);
+            cardPane.getChildren().setAll(useCaseDiagramPanel);
+            useCaseToolbar.setVisible(true);
+            currentDiagramPanel = useCaseDiagramPanel;
+        } else {
+            throw new RuntimeException("Failed to load use case diagram.");
+        }
+    }
+
+//    public static void main(String[] args) {
+//        launch(args);
+//    }
 }

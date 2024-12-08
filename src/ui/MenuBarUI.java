@@ -1,11 +1,13 @@
 package ui;
 
 import core.class_diagram.ClassDiagramCanvasPanel;
+import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -17,6 +19,9 @@ import java.io.File;
  * This class includes menus for managing files, editing diagrams, adjusting view options, and accessing help.
  */
 public class MenuBarUI extends MenuBar {
+    private static final String USE_CASE_FOLDER = "User Diagrams/Use Case Diagrams";
+    private static final String CLASS_DIAGRAM_FOLDER = "User Diagrams/Class Diagrams";
+
 
     /**
      * Constructs a MenuBarUI instance with the specified parent stage.
@@ -34,8 +39,15 @@ public class MenuBarUI extends MenuBar {
 
         saveFile.setOnAction(event -> {
             try {
-                MainFrame.getClassDiagramCanvasPanel().saveDiagram(parentStage);
-            } catch (Exception e) {
+                Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+
+                if (currentPanel instanceof ClassDiagramCanvasPanel) {
+//                    MainFrame.getClassDiagramCanvasPanel().saveDiagram(parentStage);
+                } else if (currentPanel instanceof UseCaseDiagramPanel) {
+                    data.DiagramSaver.saveUseCaseDiagram((UseCaseDiagramPanel) currentPanel);
+                } else {
+                    throw new UnsupportedOperationException("Unsupported diagram type.");
+                }            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
@@ -49,10 +61,24 @@ public class MenuBarUI extends MenuBar {
         // Edit Menu
         Menu editMenu = new Menu("Edit");
 
+
         MenuItem undo = new MenuItem("Undo");
         MenuItem redo = new MenuItem("Redo");
         MenuItem delete = new MenuItem("Delete");
 
+        undo.setOnAction(e -> {
+            Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+            if (currentPanel instanceof UndoableDiagramPanel) {
+                ((UndoableDiagramPanel) currentPanel).undo();
+            }
+        });
+
+        redo.setOnAction(e -> {
+            Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+            if (currentPanel instanceof UndoableDiagramPanel) {
+                ((UndoableDiagramPanel) currentPanel).redo();
+            }
+        });
         editMenu.getItems().addAll(undo, redo, delete);
 
         // View Menu
@@ -98,35 +124,61 @@ public class MenuBarUI extends MenuBar {
         layout.setPadding(new Insets(10));
         layout.setAlignment(Pos.CENTER);
 
-        Label heading = new Label("Available Diagrams:");
-        heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        Label classHeading = new Label("Class Diagrams:");
+        classHeading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        ListView<String> fileList = new ListView<>();
-        populateFileList(fileList);
+        ListView<String> classFileList = new ListView<>();
+        populateFileList(classFileList, CLASS_DIAGRAM_FOLDER);
+
+        Label useCaseHeading = new Label("Use Case Diagrams:");
+        useCaseHeading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        ListView<String> useCaseFileList = new ListView<>();
+        populateFileList(useCaseFileList, USE_CASE_FOLDER);
 
         Button openButton = new Button("Open");
         openButton.setDisable(true);
-        openButton.setOnAction(e -> {
-            String selectedFile = fileList.getSelectionModel().getSelectedItem();
-            if (selectedFile != null) {
-                try {
-                    MainFrame.loadDiagram(new File("User diagrams" + File.separator + selectedFile));
-                    // Call the load diagram logic
-                } catch (Exception ex) {
-                    showErrorDialog("Error", "Failed to load diagram: " + ex.getMessage());
-                    System.out.println("Failed to load diagram: " + ex.getMessage());
-                }
-                loadStage.close();
-            }
-        });
 
-        fileList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+        // Handle selection between lists
+        classFileList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            useCaseFileList.getSelectionModel().clearSelection();
             openButton.setDisable(newValue == null);
         });
 
-        layout.getChildren().addAll(heading, fileList, openButton);
+        useCaseFileList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            classFileList.getSelectionModel().clearSelection();
+            openButton.setDisable(newValue == null);
+        });
 
-        Scene scene = new Scene(layout, 400, 300);
+        openButton.setOnAction(e -> {
+            String selectedFile = classFileList.getSelectionModel().getSelectedItem();
+            boolean isClassDiagram = selectedFile != null;
+            if (!isClassDiagram) {
+                selectedFile = useCaseFileList.getSelectionModel().getSelectedItem();
+            }
+
+            if (selectedFile != null) {
+                try {
+                    File file = new File((isClassDiagram ? CLASS_DIAGRAM_FOLDER : USE_CASE_FOLDER) + File.separator + selectedFile);
+
+//                    if (isClassDiagram) {
+//                        MainFrame.loadDiagram(file);
+//                    } else {
+//                        MainFrame.loadUseCaseDiagram(file);
+//                    }
+
+                    loadStage.close();
+                } catch (Exception ex) {
+                    System.out.println("Failed to load diagram: " + ex);
+                    showErrorDialog("Error", "Failed to load diagram: " + ex.getMessage());
+                    System.out.println("Failed to load diagram: " + ex.getMessage());
+                }
+            }
+        });
+
+        layout.getChildren().addAll(classHeading, classFileList, useCaseHeading, useCaseFileList, openButton);
+
+        Scene scene = new Scene(layout, 400, 400);
         loadStage.setScene(scene);
         loadStage.show();
     }
@@ -134,13 +186,14 @@ public class MenuBarUI extends MenuBar {
     /**
      * Displays an error dialog with the specified title and message.
      *
-     * @param title the title of the error dialog
-     * @param message the error message to display
+     * @param error the title of the error dialog
+     * @param s the error message to display
      */
-    private void showErrorDialog(String title, String message) {
+    private void showErrorDialog(String error, String s) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setContentText(message);
+        alert.setTitle(error);
+        alert.setHeaderText(null);
+        alert.setContentText(s);
         alert.showAndWait();
     }
 
@@ -149,8 +202,8 @@ public class MenuBarUI extends MenuBar {
      *
      * @param fileList the ListView to populate with file names
      */
-    private void populateFileList(ListView<String> fileList) {
-        File folder = new File("User diagrams");
+    private void populateFileList(ListView<String> fileList, String folderPath) {
+        File folder = new File(folderPath);
         if (folder.exists() && folder.isDirectory()) {
             File[] files = folder.listFiles((dir, name) -> name.endsWith(".xml"));
             if (files != null) {
@@ -159,7 +212,7 @@ public class MenuBarUI extends MenuBar {
                 }
             }
         } else {
-            System.out.println("The 'User diagrams' folder does not exist.");
+            System.out.println("The folder '" + folderPath + "' does not exist.");
         }
     }
 }
