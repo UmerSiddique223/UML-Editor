@@ -43,10 +43,13 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     static boolean dragMode = false;
     private DiagramComponent selectedComponent;
     private boolean editTextMode = false;  // NEW FIELD
+    private boolean deleteMode = false;
 
 
     private Deque<Command> undoStack = new ArrayDeque<>();
     private Deque<Command> redoStack = new ArrayDeque<>();
+
+
 
     // Actor image fallback
     Image actorImage;
@@ -60,6 +63,15 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     }
     public boolean isEditTextMode() {
         return editTextMode;
+    }
+
+
+    public void setDeleteMode(boolean mode) {
+        this.deleteMode = mode;
+        setCursor(mode ? Cursor.HAND : Cursor.DEFAULT); // Change cursor to indicate deletion mode
+        if (!mode) {
+            resetAllModes(); // Reset other modes when toggling off deletion mode
+        }
     }
 
     public void addRectangle(double x, double y) {
@@ -129,39 +141,9 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         super();
         this.name=name;
         loadActorImage();
-        // Add key event handler for deletion
-        setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.DELETE) {
-                deleteSelectedComponent();
-            }
-        });
-    }
-    public void deleteSelectedComponent() {
-        if (selectedComponent != null) {
-            if (selectedComponent instanceof ActorComponent) {
-                removeActor((ActorComponent) selectedComponent);
-                LOGGER.info("Actor deleted.");
-            } else if (selectedComponent instanceof UseCaseComponent) {
-                removeUseCase((UseCaseComponent) selectedComponent);
-                LOGGER.info("Use case deleted.");
-            } else {
-                LOGGER.warning("Selected component type is not deletable.");
-            }
-            selectedComponent = null;
-        } else {
-            LOGGER.warning("No component selected for deletion.");
-        }
 
-        // Remove any associated relationships
-        relationships.removeIf(rel -> {
-            if (rel.from == selectedComponent || rel.to == selectedComponent) {
-                removeRelationship(rel);
-                LOGGER.info("Associated relationship deleted.");
-                return true;
-            }
-            return false;
-        });
     }
+
 
     private RelationshipOptions promptForRelationshipOptions(String title) {
         // Create the custom dialog.
@@ -433,13 +415,49 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
             startComponent = null;
             setOnMouseDragged(null);
             setOnMouseReleased(null);
+            setRelationshipCreationMode(false);
+
         }
     }
 
     private void onMousePressedDefault(MouseEvent mouseEvent) {
         resetAllModes();
-        // Default mode does nothing special on press
+        if (deleteMode) {
+            double x = mouseEvent.getSceneX();
+            double y = mouseEvent.getSceneY();
+
+
+
+
+
+                DiagramComponent component = getComponentAt(x, y);
+
+            if (component != null) {
+                if (component instanceof ActorComponent) {
+                    removeActor((ActorComponent) component);
+                } else if (component instanceof UseCaseComponent) {
+                    removeUseCase((UseCaseComponent) component);
+                }
+
+                // Remove relationships connected to this component
+                relationships.removeIf(relationship -> {
+                    if (relationship.from == component || relationship.to == component) {
+                        getChildren().remove(relationship.line);
+                        if (relationship.label != null) {
+                            getChildren().remove(relationship.label);
+                        }
+                        return true;
+                    }
+                    return false;
+                });
+
+                LOGGER.info("Deleted component and associated relationships.");
+            } else {
+                LOGGER.info("No component found at the clicked position.");
+            }
+        }
     }
+
 
     /**
      * Adds an Actor component (now represented by an image if available, otherwise a circle).
@@ -744,15 +762,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         }
 
     }
-    public DiagramComponent getSelectedComponent() {
-        for (DiagramComponent component : components) {
-            if (component.container.getStyleClass().contains("selected")) {
-                System.out.println(component);
-                return component;
-            }
-        }
-        return null; // No component is selected
-    }
+
 
     /**
      * Actor Component class representing an actor in the diagram.
@@ -776,10 +786,10 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
                     LOGGER.info("Actor text updated to: " + newText);
 
                     // Refresh the layout to ensure the text update is visible
-                    container.getChildren().remove(this.text); // Remove old text
+                    container.getChildren().remove(this.text);
                     container.getChildren().add(this.text);
                     StackPane.setAlignment(this.text, Pos.BOTTOM_CENTER); // Align below the actor shape
-                    this.text.setTranslateY(0); // Adjust vertical po// Re-add updated text
+                    this.text.setTranslateX(-20); // Adjust vertical po// Re-add updated text
                     container.requestLayout(); // Trigger layout refresh
                 } else {
                     LOGGER.warning("Empty text entered. Actor text not updated.");

@@ -20,6 +20,7 @@ public class UsecaseToolbar extends VBox {
         Button addRelationshipButton = new Button("Add Relationship");
         Button dragModeButton = new Button("Drag/Move Elements");
         Button rectangleButton = new Button("Add Container");
+        Button deleteMenuItem = new Button("Delete");
 
         Button editTextButton = new Button("Add/Edit Text");
         editTextButton.setOnAction(e -> {
@@ -53,9 +54,10 @@ public class UsecaseToolbar extends VBox {
         });
         rectangleButton.setOnAction(e -> useCaseDiagramPanel.addRectangle(100, 100)); // Add at a default position
 
+        deleteMenuItem.setOnAction(event -> useCaseDiagramPanel.setDeleteMode(true));
 
         // Add buttons to the toolbar
-        getChildren().addAll(addActorButton, addUserCaseButton, addRelationshipButton, dragModeButton,rectangleButton,editTextButton);
+        getChildren().addAll(addActorButton, addUserCaseButton, addRelationshipButton, dragModeButton,rectangleButton,editTextButton,deleteMenuItem);
     }
 
     // Method to reset all modes before activating a new one
