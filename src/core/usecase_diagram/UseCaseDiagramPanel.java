@@ -9,7 +9,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -19,7 +18,6 @@ import javafx.scene.shape.*;
 import javafx.scene.text.Text;
 import ui.ActorShape;
 import ui.UndoableDiagramPanel;
-
 import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Logger;
@@ -29,36 +27,176 @@ import java.util.logging.Logger;
  * Supports adding Actors, Use Cases, and Relationships.
  * Provides undo/redo functionality via Command pattern.
  */
+
+
 public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     private static final Logger LOGGER = Logger.getLogger(UseCaseDiagramPanel.class.getName());
 
+    /**
+     * Enum to represent the various interaction modes of the panel.
+     */
+    enum Mode {
+        DEFAULT,
+        ADD_ACTOR,
+        ADD_USE_CASE,
+        DRAG,
+        EDIT_TEXT,
+        DELETE,
+        CREATE_RELATIONSHIP
+    }
+
+    // List of components and relationships in the diagram
     public List<DiagramComponent> components = new ArrayList<>();
     public List<UseCaseRelationship> relationships = new ArrayList<>();
+
+    // Temporary variables for interaction
     private Line tempLine;
-    private String name;
+    private final String name;
     private DiagramComponent startComponent;
+
+    // Interaction modes
     boolean relationshipCreationMode = false;
     boolean addActorMode = false;
     boolean addUseCaseMode = false;
     static boolean dragMode = false;
-    private DiagramComponent selectedComponent;
-    private boolean editTextMode = false;  // NEW FIELD
-    private boolean deleteMode = false;
+    private boolean editTextMode = false;
+    boolean deleteMode = false;
 
-
-    private Deque<Command> undoStack = new ArrayDeque<>();
-    private Deque<Command> redoStack = new ArrayDeque<>();
-
-
-
-    // Actor image fallback
+    // Image for representing actors
     Image actorImage;
+
+    // Current interaction mode
+    Mode currentMode = Mode.DEFAULT;
+
+    // Undo/redo stacks for command-based actions
+    private final Deque<Command> undoStack = new ArrayDeque<>();
+    private final Deque<Command> redoStack = new ArrayDeque<>();
+
+    /**
+     * Constructor for the UseCaseDiagramPanel.
+     * Initializes the diagram panel with a given name and attempts to load an actor image for representation.
+     *
+     * @param name The name of the Use Case Diagram.
+     */
+    public UseCaseDiagramPanel(String name) {
+        super();
+        this.name=name;
+        loadActorImage();
+
+
+
+    }
+
+    /**
+     * Adds an actor to the diagram at the specified coordinates.
+     * Uses either a loaded image or a fallback circle shape for the actor representation.
+     *
+     * @param x The x-coordinate where the actor should be added.
+     * @param y The y-coordinate where the actor should be added.
+     * @return The created ActorComponent.
+     */
+    public ActorComponent addActor(double x, double y) {
+        StackPane actorContainer = new StackPane();
+        if (actorImage != null) {
+
+            ActorShape actorShape = new ActorShape("");
+            actorContainer.getChildren().add(actorShape);
+            resetAllModes();
+
+        } else {
+            Circle fallbackActor = new Circle(30, Color.LIGHTGRAY);
+            fallbackActor.setStroke(Color.BLACK);
+            Text actorText = new Text("Actor");
+            actorContainer.getChildren().addAll(fallbackActor, actorText);
+        }
+
+
+
+        actorContainer.setLayoutX(x);
+        actorContainer.setLayoutY(y);
+
+        // Even if it's an image, we treat it as a shape for uniformity
+        Shape shape = new Circle(30); // Dummy shape for references
+        Text text = new Text("Actor");
+
+        ActorComponent actorComponent = new ActorComponent(actorContainer, shape, text);
+        components.add(actorComponent);
+        getChildren().add(actorContainer);
+
+        LOGGER.info("Actor added at (" + x + ", " + y + ")");
+        return actorComponent;
+    }
+
+    /**
+     * Removes an actor component from the diagram.
+     * Deletes the actor and any associated relationships from the panel.
+     *
+     * @param actorComponent The ActorComponent to remove.
+     */
+    public void removeActor(ActorComponent actorComponent) {
+        components.remove(actorComponent);
+        getChildren().remove(actorComponent.container);
+    }
+
+
+
+    /**
+     * Adds a use case to the diagram at the specified coordinates with the given text label.
+     * Creates an ellipse to represent the use case.
+     *
+     * @param x The x-coordinate where the use case should be added.
+     * @param y The y-coordinate where the use case should be added.
+     * @param text The label of the use case.
+     * @return The created UseCaseComponent.
+     */
+    public UseCaseComponent addUseCase(double x, double y, String text) {
+        Ellipse useCase = new Ellipse(100, 40);
+        useCase.setFill(Color.WHITE);
+        useCase.setStroke(Color.BLACK);
+
+        Text useCaseText = new Text(text);
+
+        StackPane useCaseContainer = new StackPane(useCase, useCaseText);
+        useCaseContainer.setLayoutX(x);
+        useCaseContainer.setLayoutY(y);
+
+        UseCaseComponent useCaseComponent = new UseCaseComponent(useCaseContainer, useCase, useCaseText);
+        components.add(useCaseComponent);
+        getChildren().add(useCaseContainer);
+        resetAllModes();
+
+        LOGGER.info("Use Case '" + text + "' added at (" + x + ", " + y + ")");
+        return useCaseComponent;
+    }
+
+
+
+    /**
+     * Removes a use case component from the diagram.
+     * Deletes the use case and any associated relationships from the panel.
+     *
+     * @param useCaseComponent The UseCaseComponent to remove.
+     */
+    public void removeUseCase(UseCaseComponent useCaseComponent) {
+        components.remove(useCaseComponent);
+        getChildren().remove(useCaseComponent.container);
+    }
+
+
+
+    /** HELPER METHODS **/
+
+
+
     public void setEditTextMode(boolean mode) {
-        this.editTextMode = mode;
-        // When in edit mode, just a normal cursor or a pointer cursor
-        setCursor(mode ? Cursor.HAND : Cursor.DEFAULT);
-        if (!mode) {
-            resetAllModes(); // If you want to reset other modes when toggling off
+        if (mode) {
+            resetAllModes();
+            currentMode = Mode.EDIT_TEXT;
+            editTextMode = true;
+            setCursor(Cursor.HAND);
+            // Use the default mouse pressed unless specifically overridden
+        } else {
+            resetAllModes();
         }
     }
     public boolean isEditTextMode() {
@@ -67,88 +205,168 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
 
 
     public void setDeleteMode(boolean mode) {
-        this.deleteMode = mode;
-        setCursor(mode ? Cursor.HAND : Cursor.DEFAULT); // Change cursor to indicate deletion mode
-        if (!mode) {
-            resetAllModes(); // Reset other modes when toggling off deletion mode
+        if (mode) {
+            resetAllModes();
+            currentMode = Mode.DELETE;
+            deleteMode = true;
+            setCursor(Cursor.HAND);
+            // Default event handlers apply here; onMousePressedDefault will handle deletion
+        } else {
+            resetAllModes();
         }
     }
-
-    public void addRectangle(double x, double y) {
-        // Prompt the user for dimensions
-        TextInputDialog widthDialog = new TextInputDialog("100");
-        widthDialog.setTitle("Rectangle Dimensions");
-        widthDialog.setHeaderText("Enter Rectangle Width");
-        widthDialog.setContentText("Width:");
-
-        Optional<String> widthResult = widthDialog.showAndWait();
-        if (!widthResult.isPresent()) {
-            LOGGER.info("Rectangle creation canceled.");
-            return;
-        }
-
-        double width;
+    /**
+     * Attempts to load the actor.png image.
+     * Logs a warning and uses a fallback shape if loading fails.
+     */
+    private void loadActorImage() {
         try {
-            width = Double.parseDouble(widthResult.get().trim());
-        } catch (NumberFormatException e) {
-            LOGGER.warning("Invalid width entered. Using default value of 100.");
-            width = 100;
+            InputStream is = getClass().getResourceAsStream("actor.png");
+            if (is != null) {
+                actorImage = new Image(is);
+                LOGGER.info("Actor image loaded successfully.");
+            } else {
+                LOGGER.warning("Actor image not found, fallback to circle representation.");
+            }
+        } catch (Exception e) {
+            LOGGER.warning("Failed to load actor image: " + e.getMessage() + ". Using fallback.");
         }
+    }
 
-        TextInputDialog heightDialog = new TextInputDialog("50");
-        heightDialog.setTitle("Rectangle Dimensions");
-        heightDialog.setHeaderText("Enter Rectangle Height");
-        heightDialog.setContentText("Height:");
 
-        Optional<String> heightResult = heightDialog.showAndWait();
-        if (!heightResult.isPresent()) {
-            LOGGER.info("Rectangle creation canceled.");
-            return;
+    /**
+     * Enables or disables the mode for adding actors to the diagram.
+     * Sets the appropriate mouse cursor and handlers for interaction.
+     *
+     * @param mode True to enable adding actors; False to disable.
+     */
+    public void setAddActorMode(boolean mode) {
+        if (mode) {
+            resetAllModes();
+            currentMode = Mode.ADD_ACTOR;
+            addActorMode = true;
+            setCursor(Cursor.CROSSHAIR);
+            setOnMousePressed(this::onMousePressedToAddActor);
+            setOnMouseDragged(null);
+            setOnMouseReleased(null);
+        } else {
+            resetAllModes();
         }
+    }
 
-        double height;
-        try {
-            height = Double.parseDouble(heightResult.get().trim());
-        } catch (NumberFormatException e) {
-            LOGGER.warning("Invalid height entered. Using default value of 50.");
-            height = 50;
+    /**
+     * Enables or disables the mode for adding use cases to the diagram.
+     * Sets the appropriate mouse cursor and handlers for interaction.
+     *
+     * @param mode True to enable adding use cases; False to disable.
+     */
+    public void setAddUseCaseMode(boolean mode) {
+        if (mode) {
+            resetAllModes();
+            currentMode = Mode.ADD_USE_CASE;
+            addUseCaseMode = true;
+            setCursor(Cursor.CROSSHAIR);
+            setOnMousePressed(this::onMousePressedToAddUseCase);
+            setOnMouseDragged(null);
+            setOnMouseReleased(null);
+        } else {
+            resetAllModes();
         }
+    }
 
-        // Create and add the rectangle
-        Rectangle rectangle = new Rectangle(width, height, Color.LIGHTGRAY);
-        rectangle.setStroke(Color.BLACK);
-        rectangle.setFill(Color.TRANSPARENT);
+    /**
+     * Enables or disables the mode for dragging components in the diagram.
+     * Sets the appropriate mouse cursor and handlers for interaction.
+     *
+     * @param mode True to enable drag mode; False to disable.
+     */
+    public void setDragMode(boolean mode) {
+        if (mode) {
+            resetAllModes();
+            currentMode = Mode.DRAG;
+            dragMode = true;
+            setCursor(Cursor.MOVE);
+            setOnMousePressed(this::onMousePressedDefault);
+            setOnMouseDragged(null);
+            setOnMouseReleased(null);
+        } else {
+            resetAllModes();
+        }
+    }
 
-        StackPane rectangleContainer = new StackPane(rectangle);
-        rectangleContainer.setLayoutX(x);
-        rectangleContainer.setLayoutY(y);
 
-        Text text = new Text("");
-        rectangleContainer.getChildren().add(text);
-
-        DiagramComponent rectangleComponent = new DiagramComponent(rectangleContainer, rectangle, text);
-        components.add(rectangleComponent);
-        getChildren().add(rectangleContainer);
-
-        LOGGER.info("Rectangle container added at (" + x + ", " + y + ") with width " + width + " and height " + height);
+    public void initiateRelationshipCreation() {
+        resetAllModes();
+        relationshipCreationMode = true;
+        setCursor(Cursor.CROSSHAIR);
+        setOnMousePressed(this::onMousePressedForRelationship);
+        setOnMouseDragged(null);
+        setOnMouseReleased(null);
     }
 
 
 
-
-
-    public UseCaseDiagramPanel(String name) {
-        super();
-        this.name=name;
-        loadActorImage();
-
+    /**
+     * Enables or disables the mode for creating relationships between components in the diagram.
+     * Configures the appropriate mouse cursor and event handlers.
+     *
+     * @param mode True to enable relationship creation mode; False to disable.
+     */
+    public void setRelationshipCreationMode(boolean mode) {
+        if (mode) {
+            resetAllModes();
+            currentMode = Mode.CREATE_RELATIONSHIP;
+            relationshipCreationMode = true;
+            setCursor(Cursor.CROSSHAIR);
+            setOnMousePressed(this::onMousePressedForRelationship);
+            setOnMouseDragged(null);
+            setOnMouseReleased(null);
+        } else {
+            resetAllModes();
+        }
     }
 
 
-    private RelationshipOptions promptForRelationshipOptions(String title) {
+
+    /**
+     * Resets all interaction modes to the default mode.
+     * Clears any specific mouse event handlers and restores the default cursor.
+     */
+    public void resetAllModes() {
+        currentMode = Mode.DEFAULT;
+        addActorMode = false;
+        addUseCaseMode = false;
+        dragMode = false;
+        relationshipCreationMode = false;
+        editTextMode = false;
+        deleteMode = false;
+        setCursor(Cursor.DEFAULT);
+        setOnMousePressed(this::onMousePressedDefault);
+        setOnMouseDragged(null);
+        setOnMouseReleased(null);
+    }
+
+    /**
+     * Prompts the user for text input using a dialog.
+     *
+     * @return The entered text, or null if the dialog was canceled.
+     */
+    String promptForText() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Enter Use Case Name");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Please enter text:");
+
+        Optional<String> result = dialog.showAndWait();
+        return result.orElse(null);
+    }
+
+
+
+    private RelationshipOptions promptForRelationshipOptions() {
         // Create the custom dialog.
         Dialog<RelationshipOptions> dialog = new Dialog<>();
-        dialog.setTitle(title);
+        dialog.setTitle("Enter Relationship Details");
         dialog.setHeaderText(null);
 
         // Set the button types.
@@ -194,126 +412,83 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         return name;
     }
 
-    /**
-     * Represents the options selected in the relationship dialog.
-     */
-    private static class RelationshipOptions {
-        String label;
-        boolean isExtend;
-        boolean isInclude;
 
-        RelationshipOptions(String label, boolean isExtend, boolean isInclude) {
-            this.label = label;
-            this.isExtend = isExtend;
-            this.isInclude = isInclude;
+
+/** HELPER METHODS ------------------------------------------------------------------------------------------------**/
+
+    public void addRectangle(double x, double y) {
+        // Prompt the user for dimensions
+        TextInputDialog widthDialog = new TextInputDialog("100");
+        widthDialog.setTitle("Rectangle Dimensions");
+        widthDialog.setHeaderText("Enter Rectangle Width");
+        widthDialog.setContentText("Width:");
+
+        Optional<String> widthResult = widthDialog.showAndWait();
+        if (widthResult.isEmpty()) {
+            LOGGER.info("Rectangle creation canceled.");
+            return;
         }
-    }
 
-    /**
-     * Attempts to load the actor.png image.
-     * Logs a warning and uses a fallback shape if loading fails.
-     */
-    private void loadActorImage() {
+        double width;
         try {
-            InputStream is = getClass().getResourceAsStream("actor.png");
-            if (is != null) {
-                actorImage = new Image(is);
-                LOGGER.info("Actor image loaded successfully.");
-            } else {
-                LOGGER.warning("Actor image not found, fallback to circle representation.");
-            }
-        } catch (Exception e) {
-            LOGGER.warning("Failed to load actor image: " + e.getMessage() + ". Using fallback.");
+            width = Double.parseDouble(widthResult.get().trim());
+        } catch (NumberFormatException e) {
+            LOGGER.warning("Invalid width entered. Using default value of 100.");
+            width = 100;
         }
-    }
 
-    public void setAddActorMode(boolean mode) {
-        if (mode) {
-            resetAllModes();
-            addActorMode = true;
-            setCursor(Cursor.CROSSHAIR);
-            setOnMousePressed(this::onMousePressedToAddActor);
-            setOnMouseDragged(null);
-            setOnMouseReleased(null);
-        } else {
-            addActorMode = false;
-            setOnMousePressed(this::onMousePressedDefault);
-            setCursor(Cursor.DEFAULT);
+        TextInputDialog heightDialog = new TextInputDialog("50");
+        heightDialog.setTitle("Rectangle Dimensions");
+        heightDialog.setHeaderText("Enter Rectangle Height");
+        heightDialog.setContentText("Height:");
+
+        Optional<String> heightResult = heightDialog.showAndWait();
+        if (heightResult.isEmpty()) {
+            LOGGER.info("Rectangle creation canceled.");
+            return;
         }
-    }
 
-    public void setAddUseCaseMode(boolean mode) {
-        if (mode) {
-            resetAllModes();
-            addUseCaseMode = true;
-            setCursor(Cursor.CROSSHAIR);
-            setOnMousePressed(this::onMousePressedToAddUseCase);
-            setOnMouseDragged(null);
-            setOnMouseReleased(null);
-        } else {
-            addUseCaseMode = false;
-            setOnMousePressed(this::onMousePressedDefault);
-            setCursor(Cursor.DEFAULT);
+        double height;
+        try {
+            height = Double.parseDouble(heightResult.get().trim());
+        } catch (NumberFormatException e) {
+            LOGGER.warning("Invalid height entered. Using default value of 50.");
+            height = 50;
         }
+
+        // Create and add the rectangle
+        Rectangle rectangle = new Rectangle(width, height, Color.LIGHTGRAY);
+        rectangle.setStroke(Color.BLACK);
+        rectangle.setFill(Color.TRANSPARENT);
+
+        StackPane rectangleContainer = new StackPane(rectangle);
+        rectangleContainer.setLayoutX(x);
+        rectangleContainer.setLayoutY(y);
+
+        Text text = new Text("");
+        rectangleContainer.getChildren().add(text);
+
+        DiagramComponent rectangleComponent = new DiagramComponent(rectangleContainer, rectangle, text);
+        components.add(rectangleComponent);
+        getChildren().add(rectangleContainer);
+
+        LOGGER.info("Rectangle container added at (" + x + ", " + y + ") with width " + width + " and height " + height);
     }
 
-    public void setDragMode(boolean mode) {
-        if (mode) {
-            resetAllModes();
-            dragMode = true;
-            setCursor(Cursor.MOVE);
-            setOnMousePressed(this::onMousePressedDefault);
-            setOnMouseDragged(null);
-            setOnMouseReleased(null);
-        } else {
-            dragMode = false;
-            setCursor(Cursor.DEFAULT);
-            setOnMousePressed(this::onMousePressedDefault);
-            setOnMouseDragged(null);
-            setOnMouseReleased(null);
-        }
-    }
 
-    public void initiateRelationshipCreation() {
-        resetAllModes();
-        relationshipCreationMode = true;
-        setCursor(Cursor.CROSSHAIR);
-        setOnMousePressed(this::onMousePressedForRelationship);
-        setOnMouseDragged(null);
-        setOnMouseReleased(null);
-    }
 
-    public void setRelationshipCreationMode(boolean mode) {
-        if (mode) {
-            initiateRelationshipCreation();
-        } else {
-            relationshipCreationMode = false;
-            setOnMousePressed(this::onMousePressedDefault);
-            setCursor(Cursor.DEFAULT);
-        }
-    }
+/**Mouse Listeners**/
 
-    private void resetAllModes() {
-        addActorMode = false;
-        addUseCaseMode = false;
-        dragMode = false;
-        relationshipCreationMode = false;
-        setCursor(Cursor.DEFAULT);
-        setOnMousePressed(this::onMousePressedDefault);
-    }
 
-    String promptForText(String title) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(title);
-        dialog.setHeaderText(null);
-        dialog.setContentText("Please enter text:");
-
-        Optional<String> result = dialog.showAndWait();
-        return result.orElse(null);
-    }
+    /**
+     * Handles mouse press events when adding a use case.
+     * Prompts the user for the use case name and adds it to the diagram at the mouse location.
+     *
+     * @param mouseEvent The MouseEvent triggering the action.
+     */
 
     private void onMousePressedToAddUseCase(MouseEvent mouseEvent) {
-        String useCaseText = promptForText("Enter Use Case Name");
+        String useCaseText = promptForText();
         if (useCaseText != null && !useCaseText.trim().isEmpty()) {
             double x = mouseEvent.getX();
             double y = mouseEvent.getY();
@@ -328,6 +503,13 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         }
     }
 
+
+    /**
+     * Handles mouse press events when adding an actor.
+     * Adds an actor to the diagram at the mouse location.
+     *
+     * @param mouseEvent The MouseEvent triggering the action.
+     */
     private void onMousePressedToAddActor(MouseEvent mouseEvent) {
         double x = mouseEvent.getX();
         double y = mouseEvent.getY();
@@ -339,6 +521,13 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         redoStack.clear();
     }
 
+
+    /**
+     * Handles mouse press events when creating a relationship.
+     * Sets the starting component and prepares a temporary line for the relationship.
+     *
+     * @param mouseEvent The MouseEvent triggering the action.
+     */
     private void onMousePressedForRelationship(MouseEvent mouseEvent) {
         if (relationshipCreationMode) {
             double localX = mouseEvent.getSceneX();
@@ -364,6 +553,13 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         }
     }
 
+
+    /**
+     * Handles mouse drag events during relationship creation.
+     * Updates the temporary line to follow the mouse cursor.
+     *
+     * @param mouseEvent The MouseEvent triggering the action.
+     */
     private void onMouseDraggedForRelationship(MouseEvent mouseEvent) {
         if (tempLine != null) {
             double localX = mouseEvent.getX();
@@ -374,6 +570,12 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
 
     }
 
+    /**
+     * Handles mouse release events during relationship creation.
+     * Finalizes the relationship if a valid end component is selected, otherwise cancels the operation.
+     *
+     * @param mouseEvent The MouseEvent triggering the action.
+     */
     private void onMouseReleasedForRelationship(MouseEvent mouseEvent) {
         if (tempLine != null && startComponent != null) {
             double sceneX = mouseEvent.getSceneX();
@@ -382,7 +584,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
             DiagramComponent endComponent = getComponentAt(sceneX, sceneY);
             if (endComponent != null && endComponent != startComponent) {
                 // Use the custom dialog instead of simple text input.
-                RelationshipOptions options = promptForRelationshipOptions("Enter Relationship Details");
+                RelationshipOptions options = promptForRelationshipOptions();
 
                 if (options != null) {
                     String relationshipText = options.label;
@@ -416,21 +618,24 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
             setOnMouseDragged(null);
             setOnMouseReleased(null);
             setRelationshipCreationMode(false);
+            // resetAllModes();
 
         }
     }
 
+
+    /**
+     * Handles default mouse press events based on the current interaction mode.
+     * Supports deletion or no-op for other modes.
+     *
+     * @param mouseEvent The MouseEvent triggering the action.
+     */
     private void onMousePressedDefault(MouseEvent mouseEvent) {
-        resetAllModes();
-        if (deleteMode) {
+        // Now we rely on currentMode checks rather than multiple booleans
+        if (currentMode == Mode.DELETE) {
             double x = mouseEvent.getSceneX();
             double y = mouseEvent.getSceneY();
-
-
-
-
-
-                DiagramComponent component = getComponentAt(x, y);
+            DiagramComponent component = getComponentAt(x, y);
 
             if (component != null) {
                 if (component instanceof ActorComponent) {
@@ -439,7 +644,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
                     removeUseCase((UseCaseComponent) component);
                 }
 
-                // Remove relationships connected to this component
+                // Remove connected relationships
                 relationships.removeIf(relationship -> {
                     if (relationship.from == component || relationship.to == component) {
                         getChildren().remove(relationship.line);
@@ -455,78 +660,66 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
             } else {
                 LOGGER.info("No component found at the clicked position.");
             }
+
+            // After deleting, return to default mode:
+            resetAllModes();
+        } else {
+            // If in DEFAULT or any other non-conflicting mode, do default behavior
+            // For now, the default mode does nothing special on press
         }
     }
+
+
+    private DiagramComponent getComponentAt(double sceneX, double sceneY) {
+        for (DiagramComponent component : components) {
+            if (component.containsSceneCoords(sceneX, sceneY)) {
+                return component;
+            }
+        }
+        return null;
+    }
+
+/*Mouse Listeners -------------------------------------------------------------------**/
+
+/*Relationships**/
+
+
+
 
 
     /**
-     * Adds an Actor component (now represented by an image if available, otherwise a circle).
+     * Represents the options selected in the relationship dialog.
      */
-    public ActorComponent addActor(double x, double y) {
-        StackPane actorContainer = new StackPane();
-        if (actorImage != null) {
+    private static class RelationshipOptions {
+        String label;
+        boolean isExtend;
+        boolean isInclude;
 
-            ActorShape actorShape = new ActorShape("");
-            actorContainer.getChildren().add(actorShape);
-            resetAllModes();
-
-        } else {
-            Circle fallbackActor = new Circle(30, Color.LIGHTGRAY);
-            fallbackActor.setStroke(Color.BLACK);
-            Text actorText = new Text("Actor");
-            actorContainer.getChildren().addAll(fallbackActor, actorText);
+        /**
+         * Constructor for RelationshipOptions.
+         *
+         * @param label The label for the relationship.
+         * @param isExtend True if the relationship is of type <<extends>>.
+         * @param isInclude True if the relationship is of type <<includes>>.
+         */
+        RelationshipOptions(String label, boolean isExtend, boolean isInclude) {
+            this.label = label;
+            this.isExtend = isExtend;
+            this.isInclude = isInclude;
         }
-
-
-
-        actorContainer.setLayoutX(x);
-        actorContainer.setLayoutY(y);
-
-        // Even if it's an image, we treat it as a shape for uniformity
-        Shape shape = new Circle(30); // Dummy shape for references
-        Text text = new Text("Actor");
-
-        ActorComponent actorComponent = new ActorComponent(actorContainer, shape, text);
-        components.add(actorComponent);
-        getChildren().add(actorContainer);
-
-        LOGGER.info("Actor added at (" + x + ", " + y + ")");
-        return actorComponent;
     }
 
-    public void removeActor(ActorComponent actorComponent) {
-        components.remove(actorComponent);
-        getChildren().remove(actorComponent.container);
-    }
-
-    public UseCaseComponent addUseCase(double x, double y, String text) {
-        Ellipse useCase = new Ellipse(100, 40);
-        useCase.setFill(Color.WHITE);
-        useCase.setStroke(Color.BLACK);
-
-        Text useCaseText = new Text(text);
-
-        StackPane useCaseContainer = new StackPane(useCase, useCaseText);
-        useCaseContainer.setLayoutX(x);
-        useCaseContainer.setLayoutY(y);
-
-        UseCaseComponent useCaseComponent = new UseCaseComponent(useCaseContainer, useCase, useCaseText);
-        components.add(useCaseComponent);
-        getChildren().add(useCaseContainer);
-        resetAllModes();
-
-        LOGGER.info("Use Case '" + text + "' added at (" + x + ", " + y + ")");
-        return useCaseComponent;
-    }
-
-    public void removeUseCase(UseCaseComponent useCaseComponent) {
-        components.remove(useCaseComponent);
-        getChildren().remove(useCaseComponent.container);
-    }
 
     /**
      * Adds a relationship line between two components.
      * If relationshipText is "<<include>>" or "<<exclude>>", a dotted line with an arrow is drawn.
+     *
+     * @param from The starting component of the relationship.
+     * @param to The ending component of the relationship.
+     * @param relationshipText The label for the relationship.
+     * @param isExtend True if the relationship is of type <<extends>>.
+     * @param isInclude True if the relationship is of type <<includes>>.
+     * @return The created UseCaseRelationship.
      */
     public UseCaseRelationship addRelationship(DiagramComponent from, DiagramComponent to, String relationshipText, boolean isExtend, boolean isInclude) {
         Line relationshipLine = new Line();
@@ -544,7 +737,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
             relationshipLine.getStrokeDashArray().addAll(10.0, 10.0);
         }
 
-        getChildren().add(0, relationshipLine);
+        getChildren().addFirst(relationshipLine);
 
         Text label = null;
         if (relationshipText != null && !relationshipText.trim().isEmpty()) {
@@ -560,11 +753,18 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
 
         UseCaseRelationship relationship = new UseCaseRelationship(from, to, relationshipLine, label);
         relationships.add(relationship);
-        //resetAllModes();
+        resetAllModes();
 
         return relationship;
     }
 
+
+    /**
+     * Removes a relationship from the diagram.
+     * Deletes the relationship line and associated label from the panel.
+     *
+     * @param relationship The UseCaseRelationship to remove.
+     */
     public void removeRelationship(UseCaseRelationship relationship) {
         // Remove the relationship from the internal list.
         relationships.remove(relationship);
@@ -579,56 +779,18 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         if (relationship.label != null) {
             getChildren().remove(relationship.label);
         }
+        resetAllModes();
     }
 
-    private Polygon createArrowHead() {
-        Polygon arrowHead = new Polygon();
-        double arrowSize = 0; // Adjust size as needed
-        arrowHead.getPoints().addAll(
-                0.0, 0.0,                // Tip of the arrowhead at the center
-                -arrowSize, arrowSize,   // Bottom-left of the triangle
-                arrowSize, arrowSize     // Top-left of the triangle
-        );
-        arrowHead.setFill(Color.BLACK);
-        return arrowHead;
-    }
+    /** Relationships --------------------------------------------------------------------- **/
+
+
 
 
     /**
-     * Updates the arrow position and rotation.
-     * If isReverse is true (for exclude), arrow points from to->from,
-     * otherwise from->to.
+     * Executes the most recent command in the undo stack, reverting its effects.
+     * The command is moved to the redo stack for potential re-execution.
      */
-    private void updateArrow(Line line, Polygon arrowHead, boolean isReverse) {
-        double startX = line.getStartX();
-        double startY = line.getStartY();
-        double endX = line.getEndX();
-        double endY = line.getEndY();
-
-        double angle = Math.atan2(endY - startY, endX - startX);
-        if (isReverse) {
-            // Reverse arrow direction
-            angle += 180;
-        }
-        arrowHead.setRotate(angle);
-
-        double arrowX = isReverse ? startX : endX;
-        double arrowY = isReverse ? startY : endY;
-
-        arrowHead.setLayoutX(arrowX);
-        arrowHead.setLayoutY(arrowY);
-        arrowHead.setRotate(Math.toDegrees(angle));
-    }
-
-    private DiagramComponent getComponentAt(double sceneX, double sceneY) {
-        for (DiagramComponent component : components) {
-            if (component.containsSceneCoords(sceneX, sceneY)) {
-                return component;
-            }
-        }
-        return null;
-    }
-
     @Override
     public void undo() {
         if (!undoStack.isEmpty()) {
@@ -641,6 +803,12 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         }
     }
 
+
+
+    /**
+     * Re-executes the most recent command in the redo stack.
+     * The command is moved back to the undo stack after execution.
+     */
     @Override
     public void redo() {
         if (!redoStack.isEmpty()) {
@@ -672,40 +840,42 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
             container.setOnMouseDragged(this::componentOnMouseDragged);
             container.setOnMouseReleased(this::componentOnMouseReleased);
             // Parent might not be available at construction time, so we set it later
-            container.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            container.sceneProperty().addListener((_, _, newScene) -> {
                 if (newScene != null) {
                     parentPanel = (UseCaseDiagramPanel) container.getParent();
                 }
             });
             container.setOnMouseClicked(this::componentOnMouseClicked);
 
-        }
-        private void componentOnMouseClicked(MouseEvent event) {
-            if (parentPanel != null && parentPanel.isEditTextMode()) {
-                // If we're in edit mode and this component is an actor, open the edit dialog
-                if (this instanceof UseCaseDiagramPanel.ActorComponent) {
-                    System.out.println("[DEBUG]  ");
-
-                    System.out.println((UseCaseDiagramPanel.ActorComponent) this);
-                    ((UseCaseDiagramPanel.ActorComponent) this).editText();
+        }private void componentOnMouseClicked(MouseEvent event) {
+            if (parentPanel != null) {
+                if (parentPanel.currentMode == Mode.EDIT_TEXT) {
+                    if (this instanceof UseCaseDiagramPanel.ActorComponent) {
+                        ((UseCaseDiagramPanel.ActorComponent) this).editText();
+                        event.consume();
+                        // After finishing editing, revert to default mode
+                        parentPanel.resetAllModes();
+                    }
+                } else if (parentPanel.currentMode == Mode.DRAG) {
+                    // Ignore if dragging is active or handle accordingly
                 }
+                // Other modes can be checked similarly as needed
             }
-            // Otherwise, if not in edit text mode, we can handle other selection logic if desired
         }
 
-        private double initialX;
-        private double initialY;
         private double dragOffsetX;
         private double dragOffsetY;
 
         private void componentOnMousePressed(MouseEvent event) {
             if (dragMode) {
-                initialX = container.getLayoutX();
-                initialY = container.getLayoutY();
+                double initialX = container.getLayoutX();
+                double initialY = container.getLayoutY();
                 dragOffsetX = event.getSceneX() - initialX;
                 dragOffsetY = event.getSceneY() - initialY;
                 container.toFront();
-                event.consume();
+                event.consume(); // Consume event to prevent interference
+            } else if (parentPanel != null && parentPanel.isEditTextMode()) {
+                // Ignore drag events in edit mode if text editing is active
             }
         }
 
@@ -715,13 +885,16 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
                 double newY = event.getSceneY() - dragOffsetY;
                 container.setLayoutX(newX);
                 container.setLayoutY(newY);
-                event.consume();
+                event.consume(); // Consume event to prevent interference
             }
+
+
+
         }
 
         private void componentOnMouseReleased(MouseEvent event) {
             if (dragMode) {
-                event.consume();
+                event.consume(); // Consume event to prevent interference
             }
         }
 
@@ -729,6 +902,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
             Bounds boundsInScene = container.localToScene(container.getBoundsInLocal());
             return boundsInScene.contains(sceneX, sceneY);
         }
+
 
         /**
          * Returns the center of this component in scene coordinates.
@@ -795,22 +969,16 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
                     LOGGER.warning("Empty text entered. Actor text not updated.");
                 }
             });
+            resetAllModes();
         }
         }
 
-
-        /**
-     * Use Case Component class representing a use case ellipse in the diagram.
-     */
     public class UseCaseComponent extends DiagramComponent {
         public UseCaseComponent(StackPane container, Ellipse useCase, Text text) {
             super(container, useCase, text);
         }
     }
 
-    /**
-     * Represents a relationship (line) between two components.
-     */
 
 
 

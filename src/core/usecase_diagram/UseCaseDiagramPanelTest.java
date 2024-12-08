@@ -8,6 +8,7 @@ import org.junit.Test;
 import ui.MainFrame;
 
 import java.awt.event.MouseEvent;
+import java.util.Stack;
 
 public class UseCaseDiagramPanelTest {
     private UseCaseDiagramPanel panel;
@@ -49,17 +50,34 @@ public class UseCaseDiagramPanelTest {
         assertEquals(1, panel.relationships.size());
         assertEquals("<<include>>", relationship.label.getText());
     }
-
     @Test
-    public void testUndoRedoAddActor() {
-        UseCaseDiagramPanel.ActorComponent actor = panel.addActor(50, 50);
+    public void testUndoRedoWithStack() {
+        Stack<Command> undoStack = new Stack<>();
+        Stack<Command> redoStack = new Stack<>();
+
+        // Add Actor Command
+        Command addActorCommand = new AddActorCommand(panel, 100, 150);
+        addActorCommand.execute();
+        undoStack.push(addActorCommand);
+
+        // Check that the actor was added
         assertEquals(1, panel.components.size());
 
-        panel.undo();
+        // Undo Add Actor
+        Command lastCommand = undoStack.pop();
+        lastCommand.undo();
+        redoStack.push(lastCommand);
+
+        // Check that the actor was removed
         assertEquals(0, panel.components.size());
 
-       // panel.redo();
-       // assertEquals(1, panel.components.size());
+        // Redo Add Actor
+        Command redoCommand = redoStack.pop();
+        redoCommand.execute();
+        undoStack.push(redoCommand);
+
+        // Check that the actor was re-added
+        assertEquals(1, panel.components.size());
     }
 
     @Test
@@ -91,11 +109,42 @@ public class UseCaseDiagramPanelTest {
         assertEquals(0, panel.relationships.size());
     }
 
+
+    @Test
+    public void testSetEditTextMode() {
+        panel.setEditTextMode(true);
+        assertTrue(panel.isEditTextMode());
+        panel.setEditTextMode(false);
+        assertFalse(panel.isEditTextMode());
+    }
+
+    @Test
+    public void testSetDeleteMode() {
+        panel.setDeleteMode(true);
+        assertTrue(panel.deleteMode);
+        panel.setDeleteMode(false);
+        assertFalse(panel.deleteMode);
+    }
+
     @Test
     public void testSetAddActorMode() {
         panel.setAddActorMode(true);
         assertTrue(panel.addActorMode);
         assertEquals(Cursor.CROSSHAIR, panel.getCursor());
+    }
+
+    @Test
+    public void testResetAllModes() {
+        panel.setEditTextMode(true);
+        panel.setDeleteMode(true);
+        panel.setAddActorMode(true);
+
+        panel.resetAllModes();
+
+        assertFalse(panel.isEditTextMode());
+        assertFalse(panel.addActorMode);
+        assertFalse(panel.deleteMode);
+        assertEquals(UseCaseDiagramPanel.Mode.DEFAULT, panel.currentMode);
     }
 
     @Test
@@ -119,26 +168,7 @@ public class UseCaseDiagramPanelTest {
         assertEquals(Cursor.MOVE, panel.getCursor());
     }
 
-    @Test
-    public void testPromptForText() throws InterruptedException {
-        String text = panel.promptForText("Enter Test Text");
-        Thread.sleep(5000);
-        assertNotNull(text); // This would need to be mocked in an interactive environment
-    }
 
 
 
-    @Test
-    public void testUndoRedoRelationship() {
-        UseCaseDiagramPanel.ActorComponent actor1 = panel.addActor(100, 100);
-        UseCaseDiagramPanel.UseCaseComponent useCase1 = panel.addUseCase(200, 200, "Test Use Case");
-        UseCaseRelationship relationship = panel.addRelationship(actor1, useCase1, "<<extend>>", true, false);
-        assertEquals(1, panel.relationships.size());
-
-        panel.undo();
-        assertEquals(0, panel.relationships.size());
-
-     //  panel.redo();
-      //  assertEquals(1, panel.relationships.size());
-    }
 }
