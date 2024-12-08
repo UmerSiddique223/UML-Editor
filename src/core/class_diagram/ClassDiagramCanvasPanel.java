@@ -24,6 +24,8 @@ import java.util.ArrayList;
 public class ClassDiagramCanvasPanel extends Pane {
     ClassDiagram diagram;
     private String drawingMode = "";
+    private boolean isDragSource = false;
+
 
     private ArrayList<Relationship> relationships = new ArrayList<>(); // Store relationships
 
@@ -32,10 +34,15 @@ public class ClassDiagramCanvasPanel extends Pane {
         setPrefSize(800, 600);
 
         setOnMouseClicked(this::handleMouseClick);
+
+
 //        setOnMouseMoved(this::handleMouseMove); // Add dynamic line updates.
 
     }
-
+    private ClassPanel getSourceClassPanel() {
+        // Logic to determine the source class panel from drag context.
+        return (ClassPanel) getScene().lookup(".drag-source"); // Example mechanism
+    }
 
 
     public void setCurrentDiagram(ClassDiagram diagram) {

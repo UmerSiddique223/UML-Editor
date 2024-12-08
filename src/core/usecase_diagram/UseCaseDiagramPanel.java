@@ -97,6 +97,10 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         return result.orElse(null);
     }
 
+    public String getName() {
+        return name;
+    }
+
     /**
      * Represents the options selected in the relationship dialog.
      */
@@ -322,6 +326,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
     }
 
     private void onMousePressedDefault(MouseEvent mouseEvent) {
+        resetAllModes();
         // Default mode does nothing special on press
     }
 
@@ -334,6 +339,8 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
 
             ActorShape actorShape = new ActorShape("Actor");
             actorContainer.getChildren().add(actorShape);
+            resetAllModes();
+
         } else {
             Circle fallbackActor = new Circle(30, Color.LIGHTGRAY);
             fallbackActor.setStroke(Color.BLACK);
@@ -377,6 +384,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         UseCaseComponent useCaseComponent = new UseCaseComponent(useCaseContainer, useCase, useCaseText);
         components.add(useCaseComponent);
         getChildren().add(useCaseContainer);
+        resetAllModes();
 
         LOGGER.info("Use Case '" + text + "' added at (" + x + ", " + y + ")");
         return useCaseComponent;
@@ -443,6 +451,7 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
 
         UseCaseRelationship relationship = new UseCaseRelationship(from, to, relationshipLine, label);
         relationships.add(relationship);
+        resetAllModes();
 
         return relationship;
     }

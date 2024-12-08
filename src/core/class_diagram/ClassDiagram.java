@@ -40,6 +40,7 @@ public class ClassDiagram implements Serializable {
         return list;
     }
 
+
     public ClassPanel getClass(String className) {
         for (ClassPanel c : classes) {
             if (c.ClassName.equals(className)) {
