@@ -7,6 +7,7 @@ import core.class_diagram.Method;
 import core.class_diagram.Relationship;
 import core.usecase_diagram.UseCaseDiagramPanel;
 import core.usecase_diagram.UseCaseRelationship;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
 import org.w3c.dom.*;
@@ -64,7 +65,7 @@ public class UseCaseDBAO {
             // Save shape type (actor or use case) and text
             if (component.shape instanceof Ellipse) {
                 componentElement.setAttribute("type", "UseCase");
-            } else if (component.shape instanceof Rectangle) {
+            } else if (component.shape instanceof Circle) {
                 componentElement.setAttribute("type", "Actor");
             }
             componentElement.setAttribute("label", component.getText());
@@ -101,7 +102,6 @@ public class UseCaseDBAO {
         // Root element and diagram initialization
         Element rootElement = document.getDocumentElement();
         UseCaseDiagramPanel diagram = new UseCaseDiagramPanel( (String) rootElement.getElementsByTagName("Name").item(0).getTextContent());
-        diagram.setStyle("-fx-background-color: lightgray;");
 
         // Load components (Actors and Use Cases)
         NodeList componentNodes = document.getElementsByTagName("Component");
@@ -117,7 +117,8 @@ public class UseCaseDBAO {
 
             UseCaseDiagramPanel.DiagramComponent component;
 
-            if ("Actor".equals(label)) {
+            if ("Actor".equals(type)) {
+
                 // Add actor using the proper method
                 component = diagram.addActor(x, y);
             } else if ("UseCase".equals(type)) {

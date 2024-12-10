@@ -593,7 +593,7 @@ initializeComponents(primaryStage);
 
         if (loadedDiagram != null) {
             useCaseDiagramPanel = loadedDiagram;
-            useCaseDiagramPanel.setStyle("-fx-background-color: lightblue;");
+            useCaseDiagramPanel.setStyle("-fx-background-color: lightgray;");
             UsecaseToolbar useCaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
             rootPane.setLeft(useCaseToolbar);
             cardPane.getChildren().setAll(useCaseDiagramPanel);
