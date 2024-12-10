@@ -115,9 +115,15 @@ public class UseCaseDiagramPanel extends Pane implements UndoableDiagramPanel {
         actorContainer.setLayoutX(x);
         actorContainer.setLayoutY(y);
 
+        long actorCount = components.stream()
+                .filter(component -> component instanceof ActorComponent)
+                .count();
+
+        // Assign unique name based on count
+
         // Even if it's an image, we treat it as a shape for uniformity
         Shape shape = new Circle(30); // Dummy shape for references
-        Text text = new Text("Actor");
+        Text text = new Text("Actor " + (actorCount + 1));
 
         ActorComponent actorComponent = new ActorComponent(actorContainer, shape, text);
         components.add(actorComponent);
