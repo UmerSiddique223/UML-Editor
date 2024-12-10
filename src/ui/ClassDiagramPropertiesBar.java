@@ -24,6 +24,8 @@ public class ClassDiagramPropertiesBar extends VBox {
         TitledPane titledPane = new TitledPane();
         titledPane.setText("Properties");
         titledPane.setExpanded(true);
+        setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #dcdcdc; -fx-border-width: 0 0 0 1px;");
+
 
         // Main content of the properties bar
         VBox contentBox = new VBox(10);
@@ -31,7 +33,8 @@ public class ClassDiagramPropertiesBar extends VBox {
 
         // Project Name Section
         projectNameLabel = new Label("Project: " + projectName);
-        projectNameLabel.setStyle("-fx-font-weight: bold;");
+        projectNameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
+
         contentBox.getChildren().add(projectNameLabel);
 
         // Classes Section (Hierarchy)
@@ -61,9 +64,10 @@ public class ClassDiagramPropertiesBar extends VBox {
         VBox exportBox = new VBox(10);
         exportBox.setStyle("-fx-padding: 10px;");
         Label exportLabel = new Label("Export:");
-        Button exportToPNGButton = new Button("Export to PNG");
-        Button exportToJPGButton = new Button("Export to JPG");
-        Button saveAsJavaCodeButton = new Button("Save as Java Code");
+        Button exportToPNGButton = createStyledButton("Export to PNG");
+        Button exportToJPGButton = createStyledButton("Export to JPG");
+        Button saveAsJavaCodeButton = createStyledButton("Save as Java Code");
+        Button saveAsXMLButton = createStyledButton("Save in Projects");
 
         saveAsJavaCodeButton.setOnAction(event -> {
             try {
@@ -76,7 +80,7 @@ public class ClassDiagramPropertiesBar extends VBox {
 
         exportBox.getChildren().add(saveAsJavaCodeButton);
 
-        Button saveAsXMLButton = new Button("Save in Projects");
+
 
         exportToPNGButton.setOnAction(event -> CanvasExporterBean.exportToImage(classDiagramCanvasPanel, "png"));
         exportToJPGButton.setOnAction(event -> CanvasExporterBean.exportToImage(classDiagramCanvasPanel, "jpg"));
@@ -152,7 +156,34 @@ public class ClassDiagramPropertiesBar extends VBox {
 
         classHierarchyTreeView.setRoot(root);
     }
-
+    private Button createStyledButton(String text) {
+        Button button = new Button(text);
+        button.setStyle(
+                "-fx-background-color: #ffffff; " +
+                        "-fx-border-color: #cccccc; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-padding: 5 10; " +
+                        "-fx-font-size: 12px;"
+        );
+        button.setOnMouseEntered(e -> button.setStyle(
+                "-fx-background-color: #f0f0f0; " +
+                        "-fx-border-color: #cccccc; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-padding: 5 10; " +
+                        "-fx-font-size: 12px;"
+        ));
+        button.setOnMouseExited(e -> button.setStyle(
+                "-fx-background-color: #ffffff; " +
+                        "-fx-border-color: #cccccc; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-padding: 5 10; " +
+                        "-fx-font-size: 12px;"
+        ));
+        return button;
+    }
     public void updateRelationships() {
         TreeItem<String> root = new TreeItem<>("Relationships");
         root.setExpanded(true);

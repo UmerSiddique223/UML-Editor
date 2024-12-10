@@ -1,65 +1,87 @@
 package ui;
 
 import core.class_diagram.ClassDiagramCanvasPanel;
-import core.class_diagram.ClassPanel;
-import core.usecase_diagram.UseCaseDiagramPanel;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.VBox;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
 
 public class ClassDiagramToolbar extends VBox {
 
-    private final Map<String, Consumer<Void>> toolActions = new HashMap<>();
-    private ClassDiagramCanvasPanel classDiagramCanvasPanel;
-    private UseCaseDiagramPanel useCasePanel;
+    private final ClassDiagramCanvasPanel classDiagramCanvasPanel;
 
     public ClassDiagramToolbar(Object panel) {
-        setSpacing(10);
-        setStyle("-fx-background-color: #f0f0f0; -fx-padding: 10px;");
-
         this.classDiagramCanvasPanel = (ClassDiagramCanvasPanel) panel;
 
-        Button addClassButton = new Button("Add Class");
+        // Set the VBox properties for better alignment and styling
+        setSpacing(15);
+        setPadding(new Insets(20)); // Add padding around the toolbar
+        setAlignment(Pos.TOP_CENTER); // Center the buttons
+        setStyle("-fx-background-color: #3d3c3c; -fx-border-color: #ccc; -fx-border-width: 0 1px 0 0;");
 
-//        addClassButton.setOnAction(e -> classDiagramCanvasPanel.addClassToCanvas(new ClassPanel()));
-//        ContextMenu contextMenu = new ContextMenu();
+        // Create and style buttons
+        Button addClassButton = createStyledButton("Add Class");
+        addClassButton.setOnAction(ev -> classDiagramCanvasPanel.enableClassPlacementMode(false));
 
-        addClassButton.setOnAction(ev -> {
-            classDiagramCanvasPanel.enableClassPlacementMode(false); // false = regular class, true = interface
-        });
-        Button addInterfaceButton = new Button("Add Interface");
+        Button addInterfaceButton = createStyledButton("Add Interface");
+        addInterfaceButton.setOnAction(ev -> classDiagramCanvasPanel.enableClassPlacementMode(true));
 
+        Button associationButton = createStyledButton("Association");
+        associationButton.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("association"));
 
-        addInterfaceButton.setOnAction(ev -> {
-            classDiagramCanvasPanel.enableClassPlacementMode(true); // false = regular class, true = interface
-        });
+        Button compositionButton = createStyledButton("Composition");
+        compositionButton.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("composition"));
 
+        Button aggregationButton = createStyledButton("Aggregation");
+        aggregationButton.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("aggregation"));
 
-        getChildren().add(addClassButton);
-        getChildren().add(addInterfaceButton);
+        Button inheritanceButton = createStyledButton("Inheritance");
+        inheritanceButton.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("inheritance"));
 
-        Button button1 = new Button("Association");
-        button1.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("association"));
-        getChildren().add(button1);
-
-        Button button2 = new Button("Composition");
-        button2.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("composition"));
-        getChildren().add(button2);
-
-        Button button3 = new Button("Aggregation");
-        button3.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("aggregation"));
-        getChildren().add(button3);
-
-        Button button4 = new Button("Inheritance");
-        button4.setOnAction(e -> classDiagramCanvasPanel.setDrawingMode("inheritance"));
-        getChildren().add(button4);
+        // Add buttons to the VBox
+        getChildren().addAll(
+                addClassButton,
+                addInterfaceButton,
+                associationButton,
+                compositionButton,
+                aggregationButton,
+                inheritanceButton
+        );
     }
 
+    /**
+     * Creates a styled button with consistent look and feel.
+     *
+     * @param text the text to display on the button
+     * @return the styled button
+     */
+    private Button createStyledButton(String text) {
+        Button button = new Button(text);
+        button.setPrefWidth(150); // Set a consistent width for all buttons
+        button.setStyle(
+                "-fx-background-color: #ffffff; " +
+                        "-fx-border-color: #cccccc; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-padding: 5 10; " +
+                        "-fx-font-size: 14px;"
+        );
+        button.setOnMouseEntered(e -> button.setStyle(
+                "-fx-background-color: #f5f5f5; " +
+                        "-fx-border-color: #cccccc; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-padding: 5 10; " +
+                        "-fx-font-size: 14px;"
+        ));
+        button.setOnMouseExited(e -> button.setStyle(
+                "-fx-background-color: #ffffff; " +
+                        "-fx-border-color: #cccccc; " +
+                        "-fx-border-radius: 5; " +
+                        "-fx-background-radius: 5; " +
+                        "-fx-padding: 5 10; " +
+                        "-fx-font-size: 14px;"
+        ));
+        return button;
+    }
 }

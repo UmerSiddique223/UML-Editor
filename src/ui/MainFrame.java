@@ -372,6 +372,7 @@ initializeComponents(primaryStage);
         classDiagramToolbar = new ClassDiagramToolbar(classDiagramCanvasPanel);
         rootPane.setLeft(classDiagramToolbar);
 
+
         // Replace the contents of cardPane with the scrollable canvas
         cardPane.getChildren().setAll(scrollPane);
 
@@ -396,7 +397,9 @@ initializeComponents(primaryStage);
         UsecaseToolbar usecaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
         rootPane.setLeft(usecaseToolbar);
         usecaseToolbar.setVisible(true);
+
         rootPane.setRight(null);
+
 
         cardPane.getChildren().setAll(useCaseDiagramPanel);
         currentDiagramPanel = useCaseDiagramPanel;
@@ -564,7 +567,15 @@ initializeComponents(primaryStage);
 
         // Update the UI
         classDiagramToolbar = new ClassDiagramToolbar(classDiagramCanvasPanel);
-        rootPane.setLeft(classDiagramToolbar);
+        SplitPane splitPane = new SplitPane();
+
+// Add the toolbar and the diagram canvas to the SplitPane
+        splitPane.getItems().addAll(classDiagramToolbar, scrollPane);
+        splitPane.setDividerPositions(0.15); // Set initial width of the toolbar to 20%
+
+        rootPane.setCenter(splitPane); // Replace rootPane's center with the SplitPane
+
+
         cardPane.getChildren().setAll(scrollPane);
 
         propertiesBar = new ClassDiagramPropertiesBar(diagramName, classDiagramCanvasPanel);
