@@ -17,87 +17,142 @@ import java.io.File;
 public class MenuBarUI extends MenuBar {
     private static final String USE_CASE_FOLDER = "User Diagrams/Use Case Diagrams";
     private static final String CLASS_DIAGRAM_FOLDER = "User Diagrams/Class Diagrams";
+    private static final String MENU_BAR_STYLE =
+            "-fx-background-color: #FFFFFF; " +
+                    "-fx-padding: 5; "
+                  ;
 
+    private static final String MENU_STYLE =
+            "-fx-font-size: 14px; " +
+                    "-fx-font-weight: normal; " +
+                    "-fx-text-fill: black;";
+
+    private static final String MENU_ITEM_STYLE =
+            "-fx-font-size: 13px; " +
+                    "-fx-padding: 5 10 5 10;";
+
+    private static final String MENU_ITEM_HOVER_STYLE =
+            "-fx-background-color: rgba(30, 144, 255, 0.3); " + // Subtle hover effect
+                    "-fx-text-fill: #ffffff;";
 
     public MenuBarUI(Stage parentStage) {
+        // Apply styles to the MenuBar
+        this.setStyle(MENU_BAR_STYLE);
+
         // File Menu
-        Menu fileMenu = new Menu("File");
+        Menu fileMenu = createStyledMenu("File");
+        Menu newFileMenu = createStyledMenu("New");
 
-        MenuItem newFile = new MenuItem("New");
-        MenuItem openFile = new MenuItem("Open");
-        MenuItem saveFile = new MenuItem("Save");
-        MenuItem exitApp = new MenuItem("Exit");
+        MenuItem newClassDiagram = createStyledMenuItem("Class Diagram");
+        MenuItem newUseCaseDiagram = createStyledMenuItem("Use Case Diagram");
 
-        saveFile.setOnAction(event -> {
-            try {
-                Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+        newClassDiagram.setOnAction(e -> MainFrame.showClassDiagram("New Class Diagram"));
+        newUseCaseDiagram.setOnAction(e -> MainFrame.showUseCaseDiagram("New Use Case Diagram"));
 
-                if (currentPanel instanceof ClassDiagramCanvasPanel) {
-//                    MainFrame.getClassDiagramCanvasPanel().saveDiagram(parentStage);
-                } else if (currentPanel instanceof UseCaseDiagramPanel) {
-                    data.DiagramSaver.saveUseCaseDiagram((UseCaseDiagramPanel) currentPanel);
-                } else {
-                    throw new UnsupportedOperationException("Unsupported diagram type.");
-                }            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        newFileMenu.getItems().addAll(newClassDiagram, newUseCaseDiagram);
 
+        MenuItem home = createStyledMenuItem("Home");
+        home.setOnAction(e -> MainFrame.showHomePanel());
+
+        MenuItem openFile = createStyledMenuItem("Open");
         openFile.setOnAction(event -> showLoadDiagramWindow(parentStage));
 
+        MenuItem saveFile = createStyledMenuItem("Save");
+        saveFile.setOnAction(event -> saveCurrentDiagram());
 
-        exitApp.setOnAction(e -> parentStage.close()); // Close the application
-        fileMenu.getItems().addAll(newFile, openFile, saveFile, new SeparatorMenuItem(), exitApp);
+        MenuItem exitApp = createStyledMenuItem("Exit");
+        exitApp.setOnAction(e -> parentStage.close());
+
+        fileMenu.getItems().addAll(newFileMenu,  openFile, saveFile, new SeparatorMenuItem(), exitApp);
 
         // Edit Menu
-        Menu editMenu = new Menu("Edit");
+        Menu editMenu = createStyledMenu("Edit");
+        MenuItem undo = createStyledMenuItem("Undo");
+        MenuItem redo = createStyledMenuItem("Redo");
 
+        undo.setOnAction(e -> undoAction());
+        redo.setOnAction(e -> redoAction());
 
-        MenuItem undo = new MenuItem("Undo");
-        MenuItem redo = new MenuItem("Redo");
-        MenuItem delete = new MenuItem("Delete");
-
-        undo.setOnAction(e -> {
-            Pane currentPanel = MainFrame.getCurrentDiagramPanel();
-            if (currentPanel instanceof UndoableDiagramPanel) {
-                ((UndoableDiagramPanel) currentPanel).undo();
-            }
-        });
-
-        redo.setOnAction(e -> {
-            Pane currentPanel = MainFrame.getCurrentDiagramPanel();
-            if (currentPanel instanceof UndoableDiagramPanel) {
-                ((UndoableDiagramPanel) currentPanel).redo();
-            }
-        });
-        editMenu.getItems().addAll(undo, redo, delete);
+        editMenu.getItems().addAll(undo, redo);
 
         // View Menu
-        Menu viewMenu = new Menu("View");
+        Menu viewMenu = createStyledMenu("View");
+        MenuItem switchDiagram = createStyledMenuItem("Switch Diagram");
+        switchDiagram.setOnAction(e -> switchDiagramPanel());
+        viewMenu.getItems().add(switchDiagram);
+        viewMenu.getItems().add(home);
 
-        MenuItem zoomIn = new MenuItem("Zoom In");
-        MenuItem zoomOut = new MenuItem("Zoom Out");
-        MenuItem switchDiagram = new MenuItem("Switch Diagram");
-
-        viewMenu.getItems().addAll(zoomIn, zoomOut, new SeparatorMenuItem(), switchDiagram);
 
         // Help Menu
-        Menu helpMenu = new Menu("Help");
-
-        MenuItem about = new MenuItem("About");
-        about.setOnAction(e -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.initOwner(parentStage);
-            alert.setTitle("About");
-            alert.setHeaderText("UML Editor v1.0");
-            alert.setContentText("A simple UML editor application built with JavaFX.");
-            alert.showAndWait();
-        });
-
+        Menu helpMenu = createStyledMenu("Help");
+        MenuItem about = createStyledMenuItem("About");
+        about.setOnAction(e -> showAboutDialog(parentStage));
         helpMenu.getItems().add(about);
 
-        // Add Menus to the MenuBar
+        // Add menus to the MenuBar
         this.getMenus().addAll(fileMenu, editMenu, viewMenu, helpMenu);
+    }
+
+    // Helper method to create styled menus
+    private Menu createStyledMenu(String text) {
+        Menu menu = new Menu(text);
+        menu.setStyle(MENU_STYLE);
+        return menu;
+    }
+
+    // Helper method to create styled menu items
+    private MenuItem createStyledMenuItem(String text) {
+        MenuItem menuItem = new MenuItem(text);
+        menuItem.setStyle(MENU_ITEM_STYLE);
+
+        return menuItem;
+    }
+
+    private void saveCurrentDiagram() {
+        try {
+            Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+            if (currentPanel instanceof ClassDiagramCanvasPanel) {
+                MainFrame.getClassDiagramCanvasPanel().saveDiagram();
+            } else if (currentPanel instanceof UseCaseDiagramPanel) {
+                data.DiagramSaver.saveUseCaseDiagram((UseCaseDiagramPanel) currentPanel);
+            } else {
+                throw new UnsupportedOperationException("Unsupported diagram type.");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void undoAction() {
+        Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+        if (currentPanel instanceof UndoableDiagramPanel) {
+            ((UndoableDiagramPanel) currentPanel).undo();
+        }
+    }
+
+    private void redoAction() {
+        Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+        if (currentPanel instanceof UndoableDiagramPanel) {
+            ((UndoableDiagramPanel) currentPanel).redo();
+        }
+    }
+
+    private void switchDiagramPanel() {
+        Pane currentPanel = MainFrame.getCurrentDiagramPanel();
+        if (currentPanel instanceof ClassDiagramCanvasPanel) {
+            MainFrame.showUseCaseDiagram("New Use Case Diagram");
+        } else if (currentPanel instanceof UseCaseDiagramPanel) {
+            MainFrame.showClassDiagram("New Class Diagram");
+        }
+    }
+
+    private void showAboutDialog(Stage parentStage) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.initOwner(parentStage);
+        alert.setTitle("About");
+        alert.setHeaderText("UML Editor v1.0");
+        alert.setContentText("A simple UML editor application built with JavaFX.");
+        alert.showAndWait();
     }
 
     private void showLoadDiagramWindow(Stage parentStage) {
@@ -147,11 +202,11 @@ public class MenuBarUI extends MenuBar {
                 try {
                     File file = new File((isClassDiagram ? CLASS_DIAGRAM_FOLDER : USE_CASE_FOLDER) + File.separator + selectedFile);
 
-//                    if (isClassDiagram) {
-//                        MainFrame.loadDiagram(file);
-//                    } else {
-//                        MainFrame.loadUseCaseDiagram(file);
-//                    }
+                    if (isClassDiagram) {
+                        MainFrame.loadClassDiagram(file);
+                    } else {
+                        MainFrame.loadUseCaseDiagram(file);
+                    }
 
                     loadStage.close();
                 } catch (Exception ex) {

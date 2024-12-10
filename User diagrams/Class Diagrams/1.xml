@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Diagram>
+    <Name>1</Name>
+    <Classes>
+        <Class name="Class1" type="class" x="506.4" y="90.40000000000002">
+            <Attributes>
+                <Attribute access="public" name="age" type="int"/>
+            </Attributes>
+            <Methods/>
+        </Class>
+        <Class name="Class2" type="interface" x="36.79999999999998" y="333.59999999999997">
+            <Attributes/>
+            <Methods/>
+        </Class>
+        <Class name="Class3" type="interface" x="385.6" y="347.2">
+            <Attributes/>
+            <Methods/>
+        </Class>
+    </Classes>
+    <Relationships>
+        <Relationship endClass="Class1" startClass="Class2" type="aggregation"/>
+    </Relationships>
+</Diagram>

@@ -107,6 +107,7 @@ public class DiagramSaver {
             relationshipElement.setAttribute("startClass", relationship.getStartClass());
             relationshipElement.setAttribute("endClass", relationship.getEndClass());
             relationshipElement.setAttribute("type", relationship.getType());
+            System.out.println("Relationship: " + relationship.getStartClass() + " -> " + relationship.getEndClass()+ " type: " + relationship.getType());
             relationshipsElement.appendChild(relationshipElement);
         }
         rootElement.appendChild(relationshipsElement);

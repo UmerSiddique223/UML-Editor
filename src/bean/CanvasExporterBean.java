@@ -8,6 +8,8 @@ import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,6 +20,24 @@ public class CanvasExporterBean {
     public static void exportToImage(Node canvas, String format) {
         // Capture the canvas as an image
         WritableImage snapshot = canvas.snapshot(new SnapshotParameters(), null);
+
+        // Convert to a BufferedImage
+        BufferedImage bufferedImage = SwingFXUtils.fromFXImage(snapshot, null);
+
+        // Handle alpha channel for JPG specifically
+        if ("jpg".equalsIgnoreCase(format)) {
+            // Create a new BufferedImage without alpha channel
+            BufferedImage rgbImage = new BufferedImage(
+                    bufferedImage.getWidth(),
+                    bufferedImage.getHeight(),
+                    BufferedImage.TYPE_INT_RGB
+            );
+            // Paint the original image onto the new one (removing transparency)
+            Graphics2D graphics = rgbImage.createGraphics();
+            graphics.drawImage(bufferedImage, 0, 0, Color.WHITE, null);
+            graphics.dispose();
+            bufferedImage = rgbImage;
+        }
 
         // Show file chooser for save location
         FileChooser fileChooser = new FileChooser();
@@ -30,7 +50,7 @@ public class CanvasExporterBean {
         if (file != null) {
             try {
                 // Write the image to the selected file
-                ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), format, file);
+                ImageIO.write(bufferedImage, format, file);
                 System.out.println("Exported to " + file.getAbsolutePath());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -38,7 +58,6 @@ public class CanvasExporterBean {
             }
         }
     }
-
 
     public static void exportToJavaCode(ClassDiagram diagram, String outputDirectory) throws Exception {
         // Create the output directory if it doesn't exist

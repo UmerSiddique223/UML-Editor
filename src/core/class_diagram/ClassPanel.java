@@ -95,6 +95,8 @@ public class ClassPanel extends VBox {
                     titleField.setText(ClassName); // Revert to the current class name
                 }
             }
+            MainFrame.getPropertiesBar().refresh();
+
         });
 
         propagateEvents(titleField);
@@ -218,6 +220,8 @@ public class ClassPanel extends VBox {
                         } catch (IllegalArgumentException error) {
                             showError("Invalid Attribute Format", error.getMessage());
                         }
+                        MainFrame.getPropertiesBar().refresh();
+
                     });
                 });
                 contextMenu.getItems().add(addAttribute);
@@ -251,7 +255,9 @@ public class ClassPanel extends VBox {
                 });
             });
             contextMenu.getItems().add(addMethod);
-}
+                MainFrame.getPropertiesBar().refresh();
+
+            }
             // Delete Panel
             MenuItem delete = new MenuItem("Delete " + (isInterface ? "Interface" : "Class"));
             delete.setOnAction(ev -> {
@@ -262,6 +268,7 @@ public class ClassPanel extends VBox {
                 }
                 MainFrame.getClassDiagramCanvasPanel().getDiagram().removeClass(ClassName);
                 MainFrame.getClassDiagramCanvasPanel().getDiagram().removeRelations_of_a_Diagram(ClassName);
+                MainFrame.getPropertiesBar().refresh();
 
             });
 

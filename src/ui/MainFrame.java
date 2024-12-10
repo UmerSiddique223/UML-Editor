@@ -4,16 +4,26 @@ import core.class_diagram.*;
 import core.usecase_diagram.UseCaseDiagramPanel;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.shape.SVGPath;
+import javafx.scene.image.Image;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.geometry.*;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 import core.usecase_diagram.UseCaseDiagramPanel;
@@ -26,20 +36,57 @@ public class MainFrame extends Application {
 
     private static BorderPane rootPane; // Main container
     private static StackPane cardPane; // For switching between views
-    private VBox homePanel;
+    private static VBox homePanel;
     private static ClassDiagramCanvasPanel classDiagramCanvasPanel;
     private static ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
     private static UseCaseDiagramPanel useCaseDiagramPanel;
     private static Pane currentDiagramPanel;
+    private  static ClassDiagramPropertiesBar propertiesBar;
+
+//    @Override
+//    public void start(Stage primaryStage) {
+//        primaryStage.setTitle("UML Editor");
+//
+//        initializeComponents(primaryStage);
+//
+//        // Get screen dimensions
+//        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+//        double screenWidth = screenBounds.getWidth();
+//        double screenHeight = screenBounds.getHeight();
+//
+//        // Set the Scene and Stage size based on screen dimensions
+//        Scene scene = new Scene(rootPane, screenWidth, screenHeight);
+//        primaryStage.setScene(scene);
+//        primaryStage.setX(screenBounds.getMinX());
+//        primaryStage.setY(screenBounds.getMinY());
+//        primaryStage.setWidth(screenWidth);
+//        primaryStage.setHeight(screenHeight);
+//
+//        primaryStage.show();
+//    }
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("UML Editor");
 
-        initializeComponents(primaryStage);
+        // Create a root pane
+initializeComponents(primaryStage);
+        // Load the SVG as an image
 
-        Scene scene = new Scene(rootPane, 1100, 750);
+
+        // Get screen dimensions
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        double screenWidth = screenBounds.getWidth();
+        double screenHeight = screenBounds.getHeight();
+
+        // Set the Scene and Stage size based on screen dimensions
+        Scene scene = new Scene(rootPane, screenWidth, screenHeight);
         primaryStage.setScene(scene);
+        primaryStage.setX(screenBounds.getMinX());
+        primaryStage.setY(screenBounds.getMinY());
+        primaryStage.setWidth(screenWidth);
+        primaryStage.setHeight(screenHeight);
+
         primaryStage.show();
     }
 
@@ -59,15 +106,57 @@ public class MainFrame extends Application {
     }
 
     private void initializeHomePanel() {
-        homePanel = new VBox(20);
+        homePanel = new VBox(30); // Increased spacing for modern layout
         homePanel.setAlignment(Pos.CENTER);
-        homePanel.setStyle("-fx-background-color: white;");
 
-        Label heading = new Label("UML Editor");
-        heading.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #4682b4;");
+        // Load background image
+        String svgFilePath = "file:resources/bg.png"; // Replace with your SVG path
+        Image svgImage = new Image(svgFilePath);
 
+        // Set the SVG as a background
+        BackgroundImage backgroundImage = new BackgroundImage(
+                svgImage,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.CENTER, // Center the background
+                new BackgroundSize(
+                        BackgroundSize.DEFAULT.getWidth(),
+                        BackgroundSize.DEFAULT.getHeight(),
+                        false,
+                        false,
+                        true,
+                        true // Ensure it scales to fit
+                )
+        );
+        homePanel.setBackground(new Background(backgroundImage));
+
+        // Heading
+        Label heading = new Label("UML Diagram Maker");
+        heading.setStyle(
+                "-fx-font-size: 40px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-text-fill: #000; ");
+
+        // Paragraph description
+        Label description = new Label(
+                "Design and visualize your UML diagrams effortlessly. " +
+                        "Our editor provides powerful tools to create Class and Usecase diagrams."
+
+        );
+        description.setWrapText(true); // Wrap text for better readability
+        description.setStyle(
+                "-fx-font-size: 18px; " +
+                        "-fx-text-fill: #555555; " +
+                        "-fx-line-spacing: 5; " +
+                        "-fx-text-alignment: center;" // Center align for a clean look
+        );
+        description.setMaxWidth(600); // Restrict width for a focused view
+
+        // Buttons
         Button classBtn = new Button("Class Diagram");
         Button useCaseBtn = new Button("Use Case Diagram");
+        applyHoverEffects(classBtn, filledButtonStyle, filledButtonHoverStyle);
+        applyHoverEffects(useCaseBtn, outlinedButtonStyle, outlinedButtonHoverStyle);
 
         // Set initial styles
         classBtn.setStyle(filledButtonStyle);
@@ -85,11 +174,12 @@ public class MainFrame extends Application {
             updateHomePanel("Use Case Diagram");
         });
 
-        HBox buttonBox = new HBox(10);
+        HBox buttonBox = new HBox(20); // Increased spacing for a modern look
         buttonBox.setAlignment(Pos.CENTER);
         buttonBox.getChildren().addAll(classBtn, useCaseBtn);
 
-        homePanel.getChildren().addAll(heading, buttonBox);
+        // Add elements to the home panel
+        homePanel.getChildren().addAll(heading, description, buttonBox);
     }
 
 
@@ -180,22 +270,46 @@ public class MainFrame extends Application {
     private final String filledButtonStyle =
             "-fx-font-size: 16px; " +
                     "-fx-font-weight: bold; " +
-                    "-fx-background-color: #4682b4; " +
+                    "-fx-background-color: #4682b4; " + // Primary color
                     "-fx-text-fill: white; " +
-                    "-fx-padding: 10 20 10 20; " +
-                    "-fx-border-radius: 5px; " +
-                    "-fx-background-radius: 5px;";
+                    "-fx-padding: 8 16 8 16; " + // Reduced padding for a compact look
+                    "-fx-border-radius: 8px; " + // Rounded corners for modern feel
+                    "-fx-background-radius: 8px;" + // Match the border radius
+                    "-fx-cursor: hand;"; // Change cursor to hand on hover
+
+    private final String filledButtonHoverStyle =
+            "-fx-font-size: 16px; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-background-color: #2d76b2; " + // Lighter hover color
+                    "-fx-text-fill: white; " +
+                    "-fx-padding: 8 16 8 16; " +
+                    "-fx-border-radius: 8px; " +
+                    "-fx-background-radius: 8px;" +
+                    "-fx-cursor: hand;";
 
     private final String outlinedButtonStyle =
             "-fx-font-size: 16px; " +
                     "-fx-font-weight: bold; " +
                     "-fx-background-color: transparent; " +
+                    "-fx-border-color: #4682b4; " + // Border to match the theme
+                    "-fx-text-fill: #4682b4; " +
+                    "-fx-padding: 8 16 8 16; " +
+                    "-fx-border-width: 2px; " +
+                    "-fx-border-radius: 8px; " +
+                    "-fx-background-radius: 8px;" +
+                    "-fx-cursor: hand;";
+
+    private final String outlinedButtonHoverStyle =
+            "-fx-font-size: 16px; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-background-color: rgba(70, 130, 180, 0.1); " + // Light background hover effect
                     "-fx-border-color: #4682b4; " +
                     "-fx-text-fill: #4682b4; " +
-                    "-fx-padding: 10 20 10 20; " +
+                    "-fx-padding: 8 16 8 16; " +
                     "-fx-border-width: 2px; " +
-                    "-fx-border-radius: 5px; " +
-                    "-fx-background-radius: 5px;";
+                    "-fx-border-radius: 8px; " +
+                    "-fx-background-radius: 8px;" +
+                    "-fx-cursor: hand;";
 
 
     private void styleButton(Button button) {
@@ -228,8 +342,26 @@ public class MainFrame extends Application {
         ));
     }
 
+    private void applyHoverEffects(Button button, String baseStyle, String hoverStyle) {
+        button.setStyle(baseStyle);
+        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
+        button.setOnMouseExited(e -> button.setStyle(baseStyle));
+    }
+    static void showHomePanel() {
+        // Replace the contents of the cardPane with the home panel
+        cardPane.getChildren().setAll(homePanel);
+
+        // Hide or reset any toolbars or properties bar
+        rootPane.setLeft(null);
+        rootPane.setRight(null);
+
+        // Optionally reset currentDiagramPanel if needed
+        currentDiagramPanel = null;
+    }
+
+
     // Function to initiate class diagram canvas
-    private void showClassDiagram(String name) {
+    static void showClassDiagram(String name) {
         // Main canvas panel for Class Diagram:
         classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
         classDiagramCanvasPanel.setStyle("-fx-background-color: lightgray;");
@@ -255,24 +387,29 @@ public class MainFrame extends Application {
         cardPane.getChildren().setAll(scrollPane);
 
         // Create the properties bar
-        ClassDiagramPropertiesBar propertiesBar = new ClassDiagramPropertiesBar(name, classDiagramCanvasPanel);
+         propertiesBar = new ClassDiagramPropertiesBar(name, classDiagramCanvasPanel);
         rootPane.setRight(propertiesBar);
 
         // Make the toolbar visible
         classDiagramToolbar.setVisible(true);
+        currentDiagramPanel=classDiagramCanvasPanel;
 
     }
 
-
-    private void showUseCaseDiagram(String name) {
+    public static ClassDiagramPropertiesBar getPropertiesBar() {
+        return propertiesBar;
+    }
+    static void showUseCaseDiagram(String name) {
 
         UseCaseDiagramPanel useCaseDiagramPanel = new UseCaseDiagramPanel(name);
         UsecaseToolbar usecaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
         rootPane.setLeft(usecaseToolbar);
         usecaseToolbar.setVisible(true);
+        rootPane.setRight(null);
 
         cardPane.getChildren().setAll(useCaseDiagramPanel);
         currentDiagramPanel = useCaseDiagramPanel;
+
     }
 
 
@@ -385,7 +522,7 @@ public class MainFrame extends Application {
         rootPane.setLeft(classDiagramToolbar);
         cardPane.getChildren().setAll(scrollPane);
 
-        ClassDiagramPropertiesBar propertiesBar = new ClassDiagramPropertiesBar(diagramName, classDiagramCanvasPanel);
+        propertiesBar = new ClassDiagramPropertiesBar(diagramName, classDiagramCanvasPanel);
         rootPane.setRight(propertiesBar);
 
         for (ClassPanel c : classDiagram.getClasses()) {
@@ -400,11 +537,13 @@ public class MainFrame extends Application {
             for (Relationship r : classDiagram.getRelationships()) {
                 classDiagramCanvasPanel.setRelationship(r.getType(), r.getStartClass(), r.getEndClass());
             }
+            propertiesBar.refresh();
         });
 
-
+currentDiagramPanel=classDiagramCanvasPanel;
 
     }
+
 
     static void loadUseCaseDiagram(File file) throws Exception {
         UseCaseDiagramPanel loadedDiagram = data.DiagramSaver.loadUseCaseDiagram(file);

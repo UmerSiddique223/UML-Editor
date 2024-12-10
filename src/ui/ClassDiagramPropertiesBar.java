@@ -1,18 +1,19 @@
 package ui;
 
+import bean.CanvasExporterBean;
 import core.class_diagram.ClassDiagramCanvasPanel;
+import core.class_diagram.Relationship;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import bean.CanvasExporterBean;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
-import javax.swing.*;
 import java.io.File;
 
 public class ClassDiagramPropertiesBar extends VBox {
 
-    private final ListView<String> classListView;
+    private final TreeView<String> classHierarchyTreeView;
+    private final TreeView<String> relationshipsTreeView;
     private final Label projectNameLabel;
 
     public ClassDiagramPropertiesBar(String projectName, ClassDiagramCanvasPanel classDiagramCanvasPanel) {
@@ -33,42 +34,47 @@ public class ClassDiagramPropertiesBar extends VBox {
         projectNameLabel.setStyle("-fx-font-weight: bold;");
         contentBox.getChildren().add(projectNameLabel);
 
-        // Classes Section
+        // Classes Section (Hierarchy)
         Label classesLabel = new Label("Classes:");
-        classListView = new ListView<>();
-        classListView.setPrefHeight(200);
+        classHierarchyTreeView = new TreeView<>();
+        classHierarchyTreeView.setPrefHeight(200);
 
-        // Add classes dynamically from the diagram panel
-        classDiagramCanvasPanel.getDiagram().getClasses().forEach(classPanel -> classListView.getItems().add(classPanel.getClassName()));
+        populateClassHierarchy(classDiagramCanvasPanel);
 
-        classDiagramCanvasPanel.setOnClassAdded(newClass -> classListView.getItems().add(newClass.getClassName()));
-        classDiagramCanvasPanel.setOnClassRemoved(removedClass -> classListView.getItems().remove(removedClass.getClassName()));
-        classDiagramCanvasPanel.setOnClassRename((renamedClass, oldName) -> {
-            int index = classListView.getItems().indexOf(oldName); // Find using the old name
-            if (index != -1) {
-                classListView.getItems().set(index, renamedClass.getClassName()); // Update with new name
-            }
-        });
+        classDiagramCanvasPanel.setOnClassAdded(newClass -> populateClassHierarchy(classDiagramCanvasPanel));
+        classDiagramCanvasPanel.setOnClassRemoved(removedClass -> populateClassHierarchy(classDiagramCanvasPanel));
+        classDiagramCanvasPanel.setOnClassRename((renamedClass, oldName) -> populateClassHierarchy(classDiagramCanvasPanel));
 
-        contentBox.getChildren().addAll(classesLabel, classListView);
+        contentBox.getChildren().addAll(classesLabel, classHierarchyTreeView);
+
+        // Relationships Section
+        Label relationshipsLabel = new Label("Relationships:");
+        relationshipsTreeView = new TreeView<>();
+        relationshipsTreeView.setPrefHeight(200);
+
+        populateRelationships(classDiagramCanvasPanel);
+
+        contentBox.getChildren().addAll(relationshipsLabel, relationshipsTreeView);
         titledPane.setContent(contentBox);
 
-        VBox ExportBox = new VBox(10);
-        ExportBox.setStyle("-fx-padding: 10px;");
+        // Export Section
+        VBox exportBox = new VBox(10);
+        exportBox.setStyle("-fx-padding: 10px;");
         Label exportLabel = new Label("Export:");
         Button exportToPNGButton = new Button("Export to PNG");
         Button exportToJPGButton = new Button("Export to JPG");
         Button saveAsJavaCodeButton = new Button("Save as Java Code");
+
         saveAsJavaCodeButton.setOnAction(event -> {
             try {
                 String outputDirectory = chooseOutputDirectory((Stage) this.getScene().getWindow());
-                CanvasExporterBean.exportToJavaCode(MainFrame.getClassDiagramCanvasPanel().getDiagram(), outputDirectory);
+                CanvasExporterBean.exportToJavaCode(classDiagramCanvasPanel.getDiagram(), outputDirectory);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
 
-        ExportBox.getChildren().add(saveAsJavaCodeButton);
+        exportBox.getChildren().add(saveAsJavaCodeButton);
 
         Button saveAsXMLButton = new Button("Save in Projects");
 
@@ -76,23 +82,97 @@ public class ClassDiagramPropertiesBar extends VBox {
         exportToJPGButton.setOnAction(event -> CanvasExporterBean.exportToImage(classDiagramCanvasPanel, "jpg"));
         saveAsXMLButton.setOnAction(event -> {
             try {
-                MainFrame.getClassDiagramCanvasPanel().saveDiagram();
+                classDiagramCanvasPanel.saveDiagram();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
 
-        ExportBox.getChildren().addAll(exportLabel, exportToPNGButton, exportToJPGButton, saveAsXMLButton);
+        exportBox.getChildren().addAll(exportLabel, exportToPNGButton, exportToJPGButton, saveAsXMLButton);
 
-        TitledPane exportTiltedPane = new TitledPane();
-        exportTiltedPane.setText("Export");
-        exportTiltedPane.setExpanded(true);
-        exportTiltedPane.setContent(ExportBox);
+        TitledPane exportTitledPane = new TitledPane();
+        exportTitledPane.setText("Export");
+        exportTitledPane.setExpanded(true);
+        exportTitledPane.setContent(exportBox);
 
         // Add the titled pane to the VBox
         getChildren().add(titledPane);
-        getChildren().add(exportTiltedPane);
+        getChildren().add(exportTitledPane);
     }
+
+    private void populateClassHierarchy(ClassDiagramCanvasPanel classDiagramCanvasPanel) {
+        TreeItem<String> root = new TreeItem<>("Classes");
+        root.setExpanded(true);
+
+        for (var classPanel : classDiagramCanvasPanel.getDiagram().getClasses()) {
+            TreeItem<String> classItem = new TreeItem<>(classPanel.getClassName());
+            classItem.getChildren().add(new TreeItem<>("Attributes:"));
+            for (var attribute : classPanel.getAttributes()) {
+                classItem.getChildren().add(new TreeItem<>("  - " + attribute.getName() + " : " + attribute.getType()));
+            }
+            classItem.getChildren().add(new TreeItem<>("Methods:"));
+            for (var method : classPanel.getMethods()) {
+                classItem.getChildren().add(new TreeItem<>("  - " + method.getAccess()));
+            }
+            root.getChildren().add(classItem);
+        }
+
+        classHierarchyTreeView.setRoot(root);
+    }
+
+    private void populateRelationships(ClassDiagramCanvasPanel classDiagramCanvasPanel) {
+        TreeItem<String> root = new TreeItem<>("Relationships");
+        root.setExpanded(true);
+        System.out.println(classDiagramCanvasPanel.getDiagram().getRelationships()+"  lll");
+        for (Relationship relationship : classDiagramCanvasPanel.getDiagram().getRelationships()) {
+            System.out.println(relationship.getStartClass()+relationship.getEndClass()+ relationship.getType());
+            String relationshipText = relationship.getStartClass() + " -[" + relationship.getType() + "]-> " + relationship.getEndClass();
+            root.getChildren().add(new TreeItem<>(relationshipText));
+        }
+
+        relationshipsTreeView.setRoot(root);
+    }
+
+    public void updateClassHierarchy() {
+        TreeItem<String> root = new TreeItem<>("Classes");
+        root.setExpanded(true);
+
+        for (var classPanel : MainFrame.getClassDiagramCanvasPanel().getDiagram().getClasses()) {
+            TreeItem<String> classItem = new TreeItem<>(classPanel.getClassName());
+            classItem.getChildren().add(new TreeItem<>("Attributes:"));
+            for (var attribute : classPanel.getAttributes()) {
+                classItem.getChildren().add(new TreeItem<>("  - " + attribute.getName() + " : " + attribute.getType()));
+            }
+            classItem.getChildren().add(new TreeItem<>("Methods:"));
+            for (var method : classPanel.getMethods()) {
+                classItem.getChildren().add(new TreeItem<>("  - " + method.getAccess()));
+            }
+            root.getChildren().add(classItem);
+        }
+
+        classHierarchyTreeView.setRoot(root);
+    }
+
+    public void updateRelationships() {
+        TreeItem<String> root = new TreeItem<>("Relationships");
+        root.setExpanded(true);
+
+        for (Relationship relationship : MainFrame.getClassDiagramCanvasPanel().getDiagram().getRelationships()) {
+            String relationshipText = relationship.getStartClass() + " -[" + relationship.getType() + "]-> " + relationship.getEndClass();
+            root.getChildren().add(new TreeItem<>(relationshipText));
+        }
+
+        relationshipsTreeView.setRoot(root);
+    }
+
+    /**
+     * Updates all sections of the properties bar.
+     */
+    public void refresh() {
+        updateClassHierarchy();
+        updateRelationships();
+    }
+
     public static String chooseOutputDirectory(Stage stage) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select Output Directory");

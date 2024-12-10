@@ -2,6 +2,7 @@ package core.class_diagram;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 // For Storing Class Diagrams and Generating Code
@@ -67,14 +68,16 @@ public class ClassDiagram implements Serializable {
     }
 
     public void removeRelations_of_a_Diagram(String className) {
-        for (Relationship r : relationships) {
+        Iterator<Relationship> iterator = relationships.iterator();
+        while (iterator.hasNext()) {
+            Relationship r = iterator.next();
             if (r.getStartClass().equals(className) || r.getEndClass().equals(className)) {
                 r.deleteRelationship();
-                relationships.remove(r);
+                iterator.remove(); // Safe removal using iterator
             }
         }
-//        relationships.removeIf(r -> r.getStartClass().equals(className) || r.getEndClass().equals(className));
     }
+
 
     public ArrayList<Relationship> getRelations_of_a_Diagram(String className) {
         ArrayList<Relationship> list = new ArrayList<>();

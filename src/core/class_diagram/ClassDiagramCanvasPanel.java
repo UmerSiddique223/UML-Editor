@@ -21,6 +21,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import ui.MainFrame;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ public class ClassDiagramCanvasPanel extends Pane {
         setStyle("-fx-background-color: white;");
         setPrefSize(800, 600);
 
-        setOnMouseClicked(this::handleMousePressed);
+        setOnMouseClicked(this::handleMouseClick);
         addEventFilter(MouseEvent.MOUSE_PRESSED, this::handleMousePressed);
         addEventFilter(MouseEvent.MOUSE_MOVED, this::handleMouseMoved);
         addEventFilter(MouseEvent.MOUSE_RELEASED, this::handleMouseReleased);
@@ -52,9 +53,10 @@ public class ClassDiagramCanvasPanel extends Pane {
         return diagram;
     }
     private ClassPanel getSourceClassPanel() {
-        // Logic to determine the source class panel from drag context.
+
         return (ClassPanel) getScene().lookup(".drag-source"); // Example mechanism
     }
+
 
 
     public void setCurrentDiagram(ClassDiagram diagram) {
@@ -76,7 +78,6 @@ public class ClassDiagramCanvasPanel extends Pane {
             addClassToCanvas(new ClassPanel("Class" + (diagram.getClasses().size() + 1), false, x, y, this), x, y);
         });
 
-        // Option to add an Interface
         MenuItem addInterfaceDiagram = new MenuItem("Add Interface");
         addInterfaceDiagram.setOnAction(ev -> {
             addClassToCanvas(new ClassPanel("Interface" + (diagram.getClasses().size() + 1), true, x, y, this), x, y);
@@ -85,10 +86,9 @@ public class ClassDiagramCanvasPanel extends Pane {
         contextMenu.getItems().addAll(addClassDiagram, addInterfaceDiagram);
         contextMenu.show(this, screenX, screenY);
 
-        // Add a click listener to hide the context menu when clicking outside
         getScene().addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
             if (!contextMenu.isShowing()) {
-                return; // No need to hide if the menu is already hidden
+                return;
             }
 
             if (!contextMenu.getSkin().getNode().contains(event.getX(), event.getY())) {
@@ -161,6 +161,7 @@ public class ClassDiagramCanvasPanel extends Pane {
         diagram.addClass(classPanel);
 
         onClassAdded.accept(classPanel);
+        MainFrame.getPropertiesBar().refresh();
 
     }
 
@@ -191,10 +192,10 @@ public class ClassDiagramCanvasPanel extends Pane {
 
     // Handle mouse moved to update the temporary line
     private void handleMouseMoved(MouseEvent event) {
-        System.out.println(temporaryLine+"   lp");
+//        System.out.println(temporaryLine+"   lp");
         if (temporaryLine != null) {
             // Update the temporary line to follow the mouse
-            System.out.println(event.getX()+"   l"+ event.getY());
+//            System.out.println(event.getX()+"   l"+ event.getY());
 
             temporaryLine.setEndX(event.getX());
             temporaryLine.setEndY(event.getY());
@@ -295,7 +296,6 @@ public class ClassDiagramCanvasPanel extends Pane {
     }
 
     public void updatePosition(String className, double x, double y) {
-        System.out.println("Updating position of " + className + " to (" + x + ", " + y + ")");
         if (diagram.getClass(className) != null) {
             diagram.getClass(className).setPosition(x, y);
         }
@@ -351,6 +351,8 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Remove the relationship from the diagram
             diagram.removeRelationship(startClassName, endClassName, relationshipType);
+            MainFrame.getPropertiesBar().refresh();
+
         });
 
         // Create an invisible hitbox around the line
@@ -367,6 +369,8 @@ public class ClassDiagramCanvasPanel extends Pane {
         // Update the hitbox when the line changes
         relationshipLine.boundsInParentProperty().addListener((observable, oldValue, newValue) -> {
             updateHitBox(hitBox, relationshipLine);
+            MainFrame.getPropertiesBar().refresh();
+
         });
 
         // Show the context menu on a click within the hitbox
@@ -490,6 +494,8 @@ public class ClassDiagramCanvasPanel extends Pane {
         }
         else if (relationshipType.equals("composition")) {
             // Get parent StackPanes
+            ClassPanel originalStartClass = startClass;
+            ClassPanel originalEndClass = endClass;
             ClassPanel temp=startClass;
             startClass=endClass;
             endClass=temp;
@@ -524,13 +530,15 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line and diamond to the canvas
             getChildren().addAll(compositionLine, diamond);
-            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "composition", compositionLine, diamond));
-            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType, compositionLine, diamond));
-            createDeleteContextMenu(compositionLine, startClass.ClassName, endClass.ClassName, "composition");
+            relationships.add(new Relationship(originalStartClass.ClassName, originalEndClass.ClassName, "composition", compositionLine, diamond));
+            diagram.addRelationship(new Relationship(originalStartClass.ClassName, originalEndClass.ClassName, relationshipType, compositionLine, diamond));
+            createDeleteContextMenu(compositionLine, originalStartClass.ClassName, originalEndClass.ClassName, "composition");
 
             System.out.println("Composition relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
         }
         else if (relationshipType.equals("aggregation")) {
+            ClassPanel originalStartClass = startClass;
+            ClassPanel originalEndClass = endClass;
             ClassPanel temp=startClass;
             startClass=endClass;
             endClass=temp;
@@ -567,11 +575,13 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line and hollow diamond to the canvas
             getChildren().addAll(aggregationLine, hollowDiamond);
-            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "aggregation", aggregationLine, hollowDiamond));
-            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType, aggregationLine, hollowDiamond));
-            createDeleteContextMenu(aggregationLine, startClass.ClassName, endClass.ClassName, "aggregation");
+            relationships.add(new Relationship(originalStartClass.ClassName, originalEndClass.ClassName, "aggregation", aggregationLine, hollowDiamond));
+            diagram.addRelationship(new Relationship(originalStartClass.ClassName, originalEndClass.ClassName, relationshipType, aggregationLine, hollowDiamond));
+            createDeleteContextMenu(aggregationLine, originalStartClass.ClassName, originalEndClass.ClassName, "aggregation");
             System.out.println("Aggregation relationship added between " + startClass.ClassName + " (whole) and " + endClass.ClassName + " (part).");
-        } else if (relationshipType == "inheritance") {
+        } else if (relationshipType.equals("inheritance")) {
+            ClassPanel originalStartClass = startClass;
+            ClassPanel originalEndClass = endClass;
             ClassPanel temp=startClass;
             startClass=endClass;
             endClass=temp;
@@ -612,11 +622,12 @@ public class ClassDiagramCanvasPanel extends Pane {
 
             // Add the line and triangle to the canvas
             getChildren().addAll(inheritanceLine, triangle);
-            relationships.add(new Relationship(startClass.ClassName, endClass.ClassName, "inheritance", inheritanceLine, triangle));
-            diagram.addRelationship(new Relationship(startClass.ClassName, endClass.ClassName, relationshipType, inheritanceLine, triangle));
-            createDeleteContextMenu(inheritanceLine, startClass.ClassName, endClass.ClassName, "inheritance");
+            relationships.add(new Relationship(originalStartClass.ClassName, originalEndClass.ClassName, "inheritance", inheritanceLine, triangle));
+            diagram.addRelationship(new Relationship(originalStartClass.ClassName, originalEndClass.ClassName, relationshipType, inheritanceLine, triangle));
+            createDeleteContextMenu(inheritanceLine, originalStartClass.ClassName, originalEndClass.ClassName, "inheritance");
             System.out.println("Inheritance relationship added between " + startClass.ClassName + " (superclass) and " + endClass.ClassName + " (subclass).");
         }
+        MainFrame.getPropertiesBar().refresh();
 
     }
 
