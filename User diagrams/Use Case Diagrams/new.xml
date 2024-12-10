@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<UseCaseDiagram>
+    <Name>new</Name>
+    <Components>
+        <Component label="4" type="UseCase" x="127.19999999999999" y="142.4"/>
+        <Component label="Actor12" x="705.5999999999999" y="152.8"/>
+        <Component label="Actor" x="415.2" y="330.4"/>
+        <Component label="4" type="UseCase" x="816.8000000000002" y="278.4"/>
+    </Components>
+    <Relationships>
+        <Relationship from="4" label="5" to="Actor"/>
+        <Relationship from="Actor" label="&lt;&lt;extends&gt;&gt;" to="4"/>
+        <Relationship from="Actor12" label="4" to="4"/>
+    </Relationships>
+</UseCaseDiagram>

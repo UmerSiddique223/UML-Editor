@@ -1,17 +1,16 @@
 package core.class_diagram;
 
-import data.DiagramSaver;
+import data.ClassDiagramDBAO;
+import data.UseCaseDBAO;
 import bean.DragResizeBean;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -20,11 +19,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
 import ui.MainFrame;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -119,7 +116,7 @@ public class ClassDiagramCanvasPanel extends Pane {
 
 
 
-        DiagramSaver.saveDiagram(diagram);
+        ClassDiagramDBAO.saveDiagram(diagram);
     }
 
     public Consumer<ClassPanel> onClassAdded = classPanel -> {

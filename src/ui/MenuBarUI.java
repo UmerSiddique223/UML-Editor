@@ -2,11 +2,12 @@ package ui;
 
 import core.class_diagram.ClassDiagramCanvasPanel;
 import core.usecase_diagram.UseCaseDiagramPanel;
+import data.ClassDiagramDBAO;
+import data.UseCaseDBAO;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -114,7 +115,7 @@ public class MenuBarUI extends MenuBar {
             if (currentPanel instanceof ClassDiagramCanvasPanel) {
                 MainFrame.getClassDiagramCanvasPanel().saveDiagram();
             } else if (currentPanel instanceof UseCaseDiagramPanel) {
-                data.DiagramSaver.saveUseCaseDiagram((UseCaseDiagramPanel) currentPanel);
+                UseCaseDBAO.saveUseCaseDiagram((UseCaseDiagramPanel) currentPanel);
             } else {
                 throw new UnsupportedOperationException("Unsupported diagram type.");
             }
@@ -155,7 +156,7 @@ public class MenuBarUI extends MenuBar {
         alert.showAndWait();
     }
 
-    private void showLoadDiagramWindow(Stage parentStage) {
+    static void showLoadDiagramWindow(Stage parentStage) {
         Stage loadStage = new Stage();
         loadStage.setTitle("Load Diagram");
         loadStage.initModality(Modality.APPLICATION_MODAL);
@@ -224,7 +225,7 @@ public class MenuBarUI extends MenuBar {
         loadStage.show();
     }
 
-    private void showErrorDialog(String error, String s) {
+    private static void showErrorDialog(String error, String s) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(error);
         alert.setHeaderText(null);
@@ -232,7 +233,7 @@ public class MenuBarUI extends MenuBar {
         alert.showAndWait();
     }
 
-    private void populateFileList(ListView<String> fileList, String folderPath) {
+    private static void populateFileList(ListView<String> fileList, String folderPath) {
         File folder = new File(folderPath);
         if (folder.exists() && folder.isDirectory()) {
             File[] files = folder.listFiles((dir, name) -> name.endsWith(".xml"));

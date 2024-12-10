@@ -2,6 +2,7 @@ package ui;
 
 import core.class_diagram.*;
 import core.usecase_diagram.UseCaseDiagramPanel;
+import data.UseCaseDBAO;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -9,24 +10,21 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.shape.SVGPath;
 import javafx.scene.image.Image;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.geometry.*;
-import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import javafx.stage.Modality;
 
-import java.awt.*;
+
 import java.util.ArrayList;
-
-import core.usecase_diagram.UseCaseDiagramPanel;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,6 +39,7 @@ public class MainFrame extends Application {
     private static ClassDiagramToolbar classDiagramToolbar; // Left-side toolbar
     private static UseCaseDiagramPanel useCaseDiagramPanel;
     private static Pane currentDiagramPanel;
+    private Stage stage;
     private  static ClassDiagramPropertiesBar propertiesBar;
 
 //    @Override
@@ -86,9 +85,10 @@ initializeComponents(primaryStage);
         primaryStage.setY(screenBounds.getMinY());
         primaryStage.setWidth(screenWidth);
         primaryStage.setHeight(screenHeight);
-
+    stage=primaryStage;
         primaryStage.show();
     }
+
 
     private void initializeComponents(Stage stage) {
         rootPane = new BorderPane();
@@ -165,13 +165,13 @@ initializeComponents(primaryStage);
         classBtn.setOnAction(e -> {
             classBtn.setStyle(filledButtonStyle);
             useCaseBtn.setStyle(outlinedButtonStyle);
-            updateHomePanel("Class Diagram");
+            showProjectDialog("Class Diagram");
         });
 
         useCaseBtn.setOnAction(e -> {
             useCaseBtn.setStyle(filledButtonStyle);
             classBtn.setStyle(outlinedButtonStyle);
-            updateHomePanel("Use Case Diagram");
+            showProjectDialog("Use Case Diagram");
         });
 
         HBox buttonBox = new HBox(20); // Increased spacing for a modern look
@@ -183,88 +183,77 @@ initializeComponents(primaryStage);
     }
 
 
-    private void updateHomePanel(String diagramType) {
-        homePanel.getChildren().removeIf(node -> node instanceof VBox || node instanceof Label);
+    private void showProjectDialog(String diagramType) {
+        // Create a new Stage for the dialog
+        Stage dialogStage = new Stage();
+        dialogStage.initModality(Modality.APPLICATION_MODAL);
+        dialogStage.setTitle("Manage " + diagramType + " Project");
 
-        // Adding Description text
-        Label description = new Label();
-        description.setStyle("-fx-font-size: 16px; -fx-text-fill: #4682b4; -fx-font-weight: bold;");
-        if ("Class Diagram".equals(diagramType)) {
-            description.setText("Create or Load a Class Diagram\nUse this tool to create class diagrams.");
-        } else if ("Use Case Diagram".equals(diagramType)) {
-            description.setText("Create or Load a Use Case Diagram\nUse this tool to create use case diagrams.");
-        }
+        // Dialog layout
+        VBox dialogLayout = new VBox(30);
+        dialogLayout.setPadding(new Insets(20));
+        dialogLayout.setAlignment(Pos.CENTER);
+        dialogLayout.setStyle("-fx-background-color: #ffffff; -fx-border-color: #d3d3d3; -fx-border-radius: 10;");
 
-        VBox actionBox = new VBox(20);
-        actionBox.setAlignment(Pos.CENTER);
-        actionBox.setPadding(new Insets(20));
-        actionBox.setStyle("-fx-background-color: #f9f9f9; -fx-border-color: #d3d3d3; -fx-border-width: 1; -fx-padding: 10;");
+        // Title Label
+        Label titleLabel = new Label("Manage " + diagramType + " Project");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #4682b4;");
 
-        // Create Class diagram Section
+        // Text field for project name
         HBox createSection = new HBox(10);
         createSection.setAlignment(Pos.CENTER);
 
-        TextField createTextField = new TextField();
-        createTextField.setPromptText("Enter project name...");
+        TextField projectNameField = new TextField();
+        projectNameField.setPromptText("Enter project name...");
+        projectNameField.setPrefWidth(200); // Set preferred width for better usability
+
+        // Create button
         Button createButton = new Button("Create");
         styleButton(createButton);
 
         createButton.setOnAction(e -> {
-            String projectName = createTextField.getText().trim();
+            String projectName = projectNameField.getText().trim();
             if (projectName.isEmpty()) {
                 showAlert("Project name cannot be empty!");
             } else {
-                if (diagramType.equals("Class Diagram")) {
+                if ("Class Diagram".equals(diagramType)) {
                     showClassDiagram(projectName);
-                } else if (diagramType.equals("Use Case Diagram")) {
+                } else if ("Use Case Diagram".equals(diagramType)) {
                     showUseCaseDiagram(projectName);
                 }
+                dialogStage.close(); // Close the dialog after creating the project
             }
         });
 
-        createSection.getChildren().addAll(createTextField, createButton);
+        createSection.getChildren().addAll(projectNameField, createButton);
+        Label orLabel = new Label("OR");
+        orLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #6a6a6a; -fx-font-weight: bold;");
+        orLabel.setAlignment(Pos.CENTER);
+        orLabel.setPrefWidth(50); // Keep the width compact
 
-        // Load Section
-        HBox loadSection = new HBox(10);
-        loadSection.setAlignment(Pos.CENTER);
-
-        TextField loadTextField = new TextField();
-        loadTextField.setPromptText("Select project file...");
-        Button explorerButton = new Button("..."); // Explorer icon
-        Button loadButton = new Button("Load");
+        // Load button
+        Button loadButton = new Button("Load Existing Project");
+        loadButton.setPrefWidth(200); // Adjust width for uniformity
         styleButton(loadButton);
 
-        explorerButton.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Select Project File");
-            File selectedFile = fileChooser.showOpenDialog(null);
-            if (selectedFile != null) {
-                loadTextField.setText(selectedFile.getAbsolutePath());
-            }
-        });
-
         loadButton.setOnAction(e -> {
-            String filePath = loadTextField.getText().trim();
-            if (filePath.isEmpty()) {
-                showAlert("Please select a project file to load!");
-            } else {
-                showAlert("Loading " + diagramType + " project from: " + filePath);
-                // Add logic to load project
-            }
+            MenuBarUI.showLoadDiagramWindow(stage);
+
+            dialogStage.close(); // Close the dialog after loading
         });
 
-        loadSection.getChildren().addAll(loadTextField, explorerButton, loadButton);
+        // Add elements to the layout
+        dialogLayout.getChildren().addAll(titleLabel, createSection, orLabel,loadButton);
 
-        // Add sections to actionBox
-        actionBox.getChildren().addAll(
-                new Label("Create New Project:"),
-                createSection,
-                new Label("Load Existing Project:"),
-                loadSection
-        );
-
-        homePanel.getChildren().addAll(description, actionBox);
+        // Set the scene and show the dialog
+        Scene dialogScene = new Scene(dialogLayout, 500, 350); // Increased dimensions
+        dialogStage.setScene(dialogScene);
+        dialogStage.showAndWait();
     }
+    /**
+     * Helper method to create an action card for "Create" or "Load"
+     */
+
 
     // Styles for buttons
     private final String filledButtonStyle =
@@ -318,7 +307,7 @@ initializeComponents(primaryStage);
                         "-fx-font-weight: bold; " +
                         "-fx-background-color: #4682b4; " +
                         "-fx-text-fill: white; " +
-                        "-fx-padding: 10 20 10 20; " +
+                        "-fx-padding: 5 10 5 10; " +
                         "-fx-border-radius: 5px; " +
                         "-fx-background-radius: 5px;"
         );
@@ -327,7 +316,7 @@ initializeComponents(primaryStage);
                         "-fx-font-weight: bold; " +
                         "-fx-background-color: #1e90ff; " +
                         "-fx-text-fill: white; " +
-                        "-fx-padding: 10 20 10 20; " +
+                        "-fx-padding: 5 10 5 10; " +
                         "-fx-border-radius: 5px; " +
                         "-fx-background-radius: 5px;"
         ));
@@ -336,7 +325,7 @@ initializeComponents(primaryStage);
                         "-fx-font-weight: bold; " +
                         "-fx-background-color: #4682b4; " +
                         "-fx-text-fill: white; " +
-                        "-fx-padding: 10 20 10 20; " +
+                        "-fx-padding: 5 10 5 10; " +
                         "-fx-border-radius: 5px; " +
                         "-fx-background-radius: 5px;"
         ));
@@ -402,6 +391,8 @@ initializeComponents(primaryStage);
     static void showUseCaseDiagram(String name) {
 
         UseCaseDiagramPanel useCaseDiagramPanel = new UseCaseDiagramPanel(name);
+        useCaseDiagramPanel.setStyle("-fx-background-color: lightgray;");
+
         UsecaseToolbar usecaseToolbar = new UsecaseToolbar(useCaseDiagramPanel);
         rootPane.setLeft(usecaseToolbar);
         usecaseToolbar.setVisible(true);
@@ -421,7 +412,41 @@ initializeComponents(primaryStage);
     public static ClassDiagramCanvasPanel getClassDiagramCanvasPanel() {
         return classDiagramCanvasPanel;
     }
+    public static void setClassDiagramCanvasPanel(ClassDiagramCanvasPanel c) {
+         classDiagramCanvasPanel=c;
+    }
 
+    public static void setRootPane(BorderPane rootPane) {
+        MainFrame.rootPane = rootPane;
+    }
+
+    public static void setCardPane(StackPane cardPane) {
+        MainFrame.cardPane = cardPane;
+    }
+
+    public static void setHomePanel(VBox homePanel) {
+        MainFrame.homePanel = homePanel;
+    }
+
+    public static void setClassDiagramToolbar(ClassDiagramToolbar classDiagramToolbar) {
+        MainFrame.classDiagramToolbar = classDiagramToolbar;
+    }
+
+    public static void setUseCaseDiagramPanel(UseCaseDiagramPanel useCaseDiagramPanel) {
+        MainFrame.useCaseDiagramPanel = useCaseDiagramPanel;
+    }
+
+    public static void setCurrentDiagramPanel(Pane currentDiagramPanel) {
+        MainFrame.currentDiagramPanel = currentDiagramPanel;
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    public static void setPropertiesBar(ClassDiagramPropertiesBar propertiesBar) {
+        MainFrame.propertiesBar = propertiesBar;
+    }
 
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -430,6 +455,26 @@ initializeComponents(primaryStage);
     }
 
 
+
+    public static BorderPane getRootPane() {
+        return rootPane;
+    }
+
+    public static StackPane getCardPane() {
+        return cardPane;
+    }
+
+    public static VBox getHomePanel() {
+        return homePanel;
+    }
+
+    public static ClassDiagramToolbar getClassDiagramToolbar() {
+        return classDiagramToolbar;
+    }
+
+    public static UseCaseDiagramPanel getUseCaseDiagramPanel() {
+        return useCaseDiagramPanel;
+    }
     public static void loadClassDiagram(File file) throws Exception {
         classDiagramCanvasPanel = new ClassDiagramCanvasPanel();
         classDiagramCanvasPanel.setStyle("-fx-background-color: lightgray;");
@@ -540,13 +585,11 @@ initializeComponents(primaryStage);
             propertiesBar.refresh();
         });
 
-currentDiagramPanel=classDiagramCanvasPanel;
+        currentDiagramPanel=classDiagramCanvasPanel;
 
     }
-
-
     static void loadUseCaseDiagram(File file) throws Exception {
-        UseCaseDiagramPanel loadedDiagram = data.DiagramSaver.loadUseCaseDiagram(file);
+        UseCaseDiagramPanel loadedDiagram = UseCaseDBAO.loadUseCaseDiagram(file);
 
         if (loadedDiagram != null) {
             useCaseDiagramPanel = loadedDiagram;
