@@ -1,6 +1,7 @@
 package core.class_diagram;
 
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
 import javafx.scene.Node;
@@ -8,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -30,8 +32,16 @@ public class ClassPanel extends VBox {
 
     private Label typeLabel; // <<interface>> or empty for classes
     public TextField titleField;
-    public final TextArea attributesArea;
-    public final TextArea methodsArea;
+//    public final TextArea attributesArea;
+//    public final TextArea methodsArea;
+    private final VBox attributesBox; // Container for attribute labels
+    private final VBox methodsBox;    // Container for method labels
+    private final VBox attributesContainer; // Container for attributes
+    private final VBox methodsContainer;    // Container for methods
+    private final Label emptyAttributesLabel = new Label("No attributes added");
+    private final Label emptyMethodsLabel = new Label("No methods added");
+
+
     public void setPosition(double x, double y) {
         this.x = x;
         this.y = y;
@@ -69,6 +79,7 @@ public class ClassPanel extends VBox {
                 }
         });
 
+
         // Update ClassName when text is changed
         titleField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
@@ -101,25 +112,43 @@ public class ClassPanel extends VBox {
 
         propagateEvents(titleField);
 
-        // Attributes Section (hidden for interfaces)
-        attributesArea = new TextArea("");
-        attributesArea.setEditable(false);
-        attributesArea.setWrapText(true);
-        propagateEvents(attributesArea);
+        attributesBox = new VBox();
+        attributesBox.setSpacing(5);
+        attributesBox.setPadding(new Insets(5));
 
-        // Methods Section
-        methodsArea = new TextArea("");
-        methodsArea.setEditable(false);
-        methodsArea.setWrapText(true);
-        propagateEvents(methodsArea);
+        methodsBox = new VBox();
+        methodsBox.setSpacing(5);
+        methodsBox.setPadding(new Insets(5));
+
 
         // Add UI elements conditionally
         getChildren().add(typeLabel);
         getChildren().add(this.titleField);
+
+        // Attributes Section (hidden for interfaces)
+        attributesContainer = new VBox();
+        attributesContainer.setSpacing(5);
+        attributesContainer.setStyle("-fx-padding: 5; -fx-border-color: gray; -fx-border-width: 1;");
         if (!isInterface) {
-            getChildren().add(attributesArea); // Classes have attributes
+            emptyAttributesLabel.setStyle("-fx-font-size: 12px; -fx-font-style: italic;");
+            attributesContainer.getChildren().add(emptyAttributesLabel); // Add placeholder
+            getChildren().add(attributesContainer);
         }
-        getChildren().add(methodsArea); // Both have methods
+
+        // Methods Section
+        methodsContainer = new VBox();
+        methodsContainer.setSpacing(5);
+        methodsContainer.setStyle("-fx-padding: 5; -fx-border-color: gray; -fx-border-width: 1;");
+        emptyMethodsLabel.setStyle("-fx-font-size: 12px; -fx-font-style: italic;");
+        methodsContainer.getChildren().add(emptyMethodsLabel); // Add placeholder
+        getChildren().add(methodsContainer);
+
+
+
+        if (!isInterface) {
+            getChildren().add(attributesBox); // Classes have attributes
+        }
+        getChildren().add(methodsBox); // Both have methods
 
         setAlignment(Pos.CENTER);
         if (MainFrame.getClassDiagramCanvasPanel().getDrawingMode()==""){
@@ -187,14 +216,12 @@ public class ClassPanel extends VBox {
             ContextMenu contextMenu = new ContextMenu();
 
             if (!isInterface) {
-                // Add Attribute (only for classes)
                 MenuItem addAttribute = new MenuItem("Add Attribute");
                 addAttribute.setOnAction(ev -> {
-                    // Single dialog for attribute input
                     TextInputDialog dialog = new TextInputDialog();
                     dialog.setTitle("Add Attribute");
                     dialog.setHeaderText("Enter Attribute in Format: [access] [type] [name]");
-                    dialog.setContentText("Example: -\n+ int age (for public)");
+                    dialog.setContentText("Example: + int age");
 
                     dialog.showAndWait().ifPresent(input -> {
                         try {
@@ -213,15 +240,14 @@ public class ClassPanel extends VBox {
                             if (attributes.stream().anyMatch(attr -> attr.getName().equals(name))) {
                                 throw new IllegalArgumentException("Attribute with the name '" + name + "' already exists.");
                             }
+
                             // Create and add the attribute
                             Attribute attribute = new Attribute(name, type, access);
-                            attributes.add(attribute);
-                            updateAttributes();
+                            addAttribute(attribute); // Updated to use the new logic
                         } catch (IllegalArgumentException error) {
                             showError("Invalid Attribute Format", error.getMessage());
                         }
                         MainFrame.getPropertiesBar().refresh();
-
                     });
                 });
                 contextMenu.getItems().add(addAttribute);
@@ -229,35 +255,36 @@ public class ClassPanel extends VBox {
 
 
             // Method
-            if (!isInterface) {
-            MenuItem addMethod = new MenuItem("Add Method");
-            addMethod.setOnAction(ev -> {
-                TextInputDialog dialog = new TextInputDialog();
-                dialog.setTitle("Add Method");
-                dialog.setHeaderText("Enter Method in Format: [access] [returnType] [name](params)");
-                dialog.setContentText("Example: + int calculateSum(int a, int b)");
+//            if (!isInterface) {
+                MenuItem addMethod = new MenuItem("Add Method");
+                addMethod.setOnAction(ev -> {
+                    TextInputDialog dialog = new TextInputDialog();
+                    dialog.setTitle("Add Method");
+                    dialog.setHeaderText("Enter Method in Format: [access] [returnType] [name](params)");
+                    dialog.setContentText("Example: + int calculateSum(int a, int b)");
 
-                dialog.showAndWait().ifPresent(input -> {
-                    try {
-                        // Parse the method input
-                        Method method = parseMethodInput(input);
-                        if (methods.stream().anyMatch(existingMethod ->
-                                existingMethod.getName().equals(method.getName()) &&
-                                        existingMethod.getParameters().equals(method.getParameters()))) {
-                            throw new IllegalArgumentException("Method with the same name and parameters already exists.");
+                    dialog.showAndWait().ifPresent(input -> {
+                        try {
+                            // Parse the method input
+                            Method method = parseMethodInput(input);
+                            if (methods.stream().anyMatch(existingMethod ->
+                                    existingMethod.getName().equals(method.getName()) &&
+                                            existingMethod.getParameters().equals(method.getParameters()))) {
+                                throw new IllegalArgumentException("Method with the same name and parameters already exists.");
+                            }
+
+                            addMethod(method); // Updated to use the new logic
+                        } catch (IllegalArgumentException error) {
+                            showError("Invalid Method Format", error.getMessage());
                         }
-                        methods.add(method);
-                        updateMethods();
-                    } catch (IllegalArgumentException error)
-                    {
-                        showError("Invalid Method Format", error.getMessage());
-                    }
+                    });
+                    MainFrame.getPropertiesBar().refresh();
                 });
-            });
-            contextMenu.getItems().add(addMethod);
+
+                contextMenu.getItems().add(addMethod);
                 MainFrame.getPropertiesBar().refresh();
 
-            }
+//            }
             // Delete Panel
             MenuItem delete = new MenuItem("Delete " + (isInterface ? "Interface" : "Class"));
             delete.setOnAction(ev -> {
@@ -332,37 +359,37 @@ public class ClassPanel extends VBox {
                 throw new IllegalArgumentException("Invalid access level. Use -, +, or #.");
         }
     }
-    private void updateAttributes() {
-        StringBuilder attributesText = new StringBuilder();
-        for (Attribute attribute : attributes) {
-            String accessSymbol = getAccessSymbol(attribute.access);
-            attributesText.append(accessSymbol)
-                    .append(" ")
-                    .append(attribute.name)
-                    .append(" :")
-                    .append(attribute.type)
-                    .append("\n");
-        }
-        attributesArea.setText(attributesText.toString());
-    }
-
-    private void updateMethods() {
-        StringBuilder methodsText = new StringBuilder();
-        for (Method method : methods) {
-            String accessSymbol = isInterface ? "+" : getAccessSymbol(method.access);
-            methodsText.append(accessSymbol)
-                    .append(" ")
-                    .append(method.name)
-                    .append(" (");
-            if (!method.parameters.isEmpty()) {
-                methodsText.append(String.join(", ", method.parameters));
-            }
-            methodsText.append(") :")
-                    .append(method.returnType)
-                    .append("\n");
-        }
-        methodsArea.setText(methodsText.toString());
-    }
+//    private void updateAttributes() {
+//        StringBuilder attributesText = new StringBuilder();
+//        for (Attribute attribute : attributes) {
+//            String accessSymbol = getAccessSymbol(attribute.access);
+//            attributesText.append(accessSymbol)
+//                    .append(" ")
+//                    .append(attribute.name)
+//                    .append(" :")
+//                    .append(attribute.type)
+//                    .append("\n");
+//        }
+//        attributesArea.setText(attributesText.toString());
+//    }
+//
+//    private void updateMethods() {
+//        StringBuilder methodsText = new StringBuilder();
+//        for (Method method : methods) {
+//            String accessSymbol = isInterface ? "+" : getAccessSymbol(method.access);
+//            methodsText.append(accessSymbol)
+//                    .append(" ")
+//                    .append(method.name)
+//                    .append(" (");
+//            if (!method.parameters.isEmpty()) {
+//                methodsText.append(String.join(", ", method.parameters));
+//            }
+//            methodsText.append(") :")
+//                    .append(method.returnType)
+//                    .append("\n");
+//        }
+//        methodsArea.setText(methodsText.toString());
+//    }
 
     private String getAccessSymbol(String access) {
         switch (access) {
@@ -392,21 +419,88 @@ public class ClassPanel extends VBox {
     public void addAttribute(Attribute attribute) {
         attributes.add(attribute);
 
+        HBox attributeBox = new HBox();
+        attributeBox.setSpacing(10);
+
+        String accessSymbol = getAccessSymbol(attribute.access);
+        Label attributeLabel = new Label(accessSymbol + " " + attribute.name + " : " + attribute.type);
+        attributeLabel.setStyle("-fx-font-size: 12px;");
+
+        Button deleteButton = new Button("X");
+        deleteButton.setOnAction(event -> {
+            attributes.remove(attribute);
+            attributesContainer.getChildren().remove(attributeBox);
+            togglePlaceholder(attributesContainer, emptyAttributesLabel, attributes.isEmpty());
+        });
+
+        attributeBox.getChildren().addAll(attributeLabel, deleteButton);
+        attributesContainer.getChildren().add(attributeBox);
+        togglePlaceholder(attributesContainer, emptyAttributesLabel, attributes.isEmpty());
     }
+
+
 
     public void setMethods(ArrayList<Method> methods) {
         this.methods.clear();
         this.methods.addAll(methods);
-        updateMethods();
+        methodsBox.getChildren().clear();
+        for (Method method : methods) {
+            addMethod(method);
+        }
     }
 
     public void setAttributes(ArrayList<Attribute> attributes) {
         this.attributes.clear();
         this.attributes.addAll(attributes);
-        updateAttributes();
+        attributesBox.getChildren().clear();
+        for (Attribute attribute : attributes) {
+            addAttribute(attribute);
+        }
     }
 
     public void addMethod(Method method) {
         methods.add(method);
+
+        HBox methodBox = new HBox();
+        methodBox.setSpacing(10);
+
+        String accessSymbol = isInterface ? "+" : getAccessSymbol(method.access);
+        Label methodLabel = new Label(accessSymbol + " " + method.name + " ("
+                + String.join(", ", method.parameters) + ") : " + method.returnType);
+        methodLabel.setStyle("-fx-font-size: 12px;");
+
+        Button deleteButton = new Button("X");
+        deleteButton.setOnAction(event -> {
+            methods.remove(method);
+            methodsContainer.getChildren().remove(methodBox);
+            togglePlaceholder(methodsContainer, emptyMethodsLabel, methods.isEmpty());
+        });
+
+        methodBox.getChildren().addAll(methodLabel, deleteButton);
+        methodsContainer.getChildren().add(methodBox);
+        togglePlaceholder(methodsContainer, emptyMethodsLabel, methods.isEmpty());
+    }
+
+    private void togglePlaceholder(VBox container, Label placeholder, boolean isEmpty) {
+        if (isEmpty) {
+            if (!container.getChildren().contains(placeholder)) {
+                container.getChildren().add(placeholder);
+            }
+        } else {
+            container.getChildren().remove(placeholder);
+        }
+    }
+
+
+
+    private String formatAttribute(Attribute attribute) {
+        String accessSymbol = getAccessSymbol(attribute.access);
+        return accessSymbol + " " + attribute.name + " : " + attribute.type;
+    }
+
+    private String formatMethod(Method method) {
+        String accessSymbol = isInterface ? "+" : getAccessSymbol(method.access);
+        String params = String.join(", ", method.parameters);
+        return accessSymbol + " " + method.name + "(" + params + ") : " + method.returnType;
     }
 }

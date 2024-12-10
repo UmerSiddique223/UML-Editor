@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Diagram>
+    <Name>check</Name>
+    <Classes>
+        <Class name="Class1" type="class" x="211.2" y="227.2">
+            <Attributes>
+                <Attribute access="public" name="age" type="int"/>
+                <Attribute access="public" name="age" type="int"/>
+                <Attribute access="public" name="age" type="int"/>
+            </Attributes>
+            <Methods/>
+        </Class>
+        <Class name="Interface2" type="interface" x="601.6" y="272.8">
+            <Attributes/>
+            <Methods>
+                <Method access="public" name="check" returnType="int">
+                    <Parameters/>
+                </Method>
+                <Method access="public" name="check" returnType="int">
+                    <Parameters/>
+                </Method>
+                <Method access="public" name="check" returnType="int">
+                    <Parameters/>
+                </Method>
+            </Methods>
+        </Class>
+    </Classes>
+    <Relationships>
+        <Relationship endClass="Interface2" startClass="Class1" type="composition"/>
+    </Relationships>
+</Diagram>
